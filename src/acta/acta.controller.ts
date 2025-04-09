@@ -33,36 +33,25 @@ export class ActaController {
 
   @Get(':id')
   async ObtenerActa(@Param('id') id: string) {
-    const documentoActa = await this.actaService.ObtenerActa(id);
-    if (!documentoActa) {
-      throw new NotFoundException('Acta no encontrada');
-    }
-    return documentoActa;
+    return await this.actaService.ObtenerActa(id);
   }
 
-    @Get(':id/descargar')
-    async descargarActa(@Param('id') id: string, @Res() res: Response) {
-      const documentoActa = await this.actaService.DescargarActa(id);
-      if (!documentoActa) {
-        throw new NotFoundException('Acta no encontrada');
-      }
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=${documentoActa.tipo}.pdf`,
-      });
-      res.status(HttpStatus.OK).send(documentoActa.contenido);
-    }
+  @Get(':id/descargar')
+  async descargarActa(@Param('id') id: string, @Res() res: Response) {
+    const documentoActa = await this.actaService.DescargarActa(id);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=${documentoActa.tipo}.pdf`,
+    });
+    res.status(HttpStatus.OK).send(documentoActa.contenido);
+  }
   @Patch(':id/actualizar')
-  async actualizarActa(
-    @Param('id') id: string,
-    @Body() dto: ActaDto
-  ) {
-    const documentoActa = await this.actaService.actualizarActa(id, dto);
-    if (!documentoActa) {
-      throw new NotFoundException('Acta no encontrada');
-    }
-    return documentoActa;
+  async actualizarActa(@Param('id') id: string, @Body() dto: ActaDto) {
+    return await this.actaService.actualizarActa(id, dto);
+  }
+
+  @Delete(':id/eliminar')
+  async eliminarActa(@Param('id') id: string) {
+    return await this.actaService.eliminarActa(id);
   }
 }
-
-

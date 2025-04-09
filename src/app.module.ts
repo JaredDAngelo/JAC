@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DocumentoModule } from './documento/documento.module';
 import { ActaModule } from './acta/acta.module';
+import { CertificadoModule } from './certificado/certificado.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ActaModule } from './acta/acta.module';
     ),
     DocumentoModule,
     ActaModule,
+    CertificadoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -10,6 +10,9 @@ export class ActaService {
 
   async CrearActa(actaDto: ActaDto): Promise<IActa> {
     const nuevoActa = new this.actaModel(actaDto);
+    if (!nuevoActa) {
+      throw new NotFoundException('Acta no creada');
+    }
     return await nuevoActa.save();
   }
 
@@ -25,6 +28,9 @@ export class ActaService {
     id: string
   ): Promise<{ contenido: Buffer; tipo: string }> {
     const documentoActa = await this.ObtenerActa(id);
+    if (!documentoActa) {
+      throw new NotFoundException('Acta no Descargada');
+    }
     return {
       contenido: documentoActa.contenido,
       tipo: documentoActa.tipo,
@@ -36,7 +42,15 @@ export class ActaService {
       new: true,
     });
     if (!documentoActa) {
-      throw new NotFoundException('Acta no encontrada');
+      throw new NotFoundException('Acta no Actualizada');
+    }
+    return documentoActa;
+  }
+
+  async eliminarActa(id: string): Promise<IActa> {
+    const documentoActa = await this.actaModel.findByIdAndDelete(id);
+    if (!documentoActa) {
+      throw new NotFoundException('Acta no Eliminada');
     }
     return documentoActa;
   }

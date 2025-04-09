@@ -6,10 +6,10 @@ import {
   Body,
   Param,
   Get,
-  NotFoundException,
   Res,
   HttpStatus,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentoService } from './documento.service';
@@ -34,20 +34,13 @@ export class DocumentoController {
   // * Obtiene la información de un documento por ID
   @Get(':id')
   async obtenerDocumento(@Param('id') id: string) {
-    const documento = await this.documentoService.obtenerDocumento(id);
-    if (!documento) {
-      throw new NotFoundException('Documento no encontrado');
-    }
-    return documento;
+    return await this.documentoService.obtenerDocumento(id);
   }
 
   // * Descarga un documento por ID
   @Get(':id/descargar')
   async descargarDocumento(@Param('id') id: string, @Res() res: Response) {
     const documento = await this.documentoService.descargarDocumento(id);
-    if (!documento) {
-      throw new NotFoundException('Documento no encontrado');
-    }
     // * Configura los encabezados de la respuesta HTTP para la descarga del archivo
     res.set({
       'Content-Type': 'application/pdf',
@@ -62,10 +55,12 @@ export class DocumentoController {
     @Param('id') id: string,
     @Body() dto: DocumentoDto
   ) {
-    const documento = await this.documentoService.actualizarDocumento(id, dto);
-    if (!documento) {
-      throw new NotFoundException('Documento no encontrado');
-    }
-    return documento;
+    return await this.documentoService.actualizarDocumento(id, dto);
+  }
+
+  // * Elimina un documento por ID
+  @Delete(':id/eliminar')
+  async eliminarDocumento(@Param('id') id: string) {
+    return await this.documentoService.eliminardocumento(id);
   }
 }

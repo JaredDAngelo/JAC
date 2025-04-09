@@ -13,6 +13,9 @@ export class DocumentoService {
   // * Crea un nuevo documento en la base de datos
   async crearDocumento(documentoDto: DocumentoDto): Promise<IDocumento> {
     const nuevoDocumento = new this.documentoModel(documentoDto);
+    if (!nuevoDocumento) {
+      throw new NotFoundException('Documento no Creado');
+    }
     return await nuevoDocumento.save();
   }
 
@@ -20,17 +23,19 @@ export class DocumentoService {
   async obtenerDocumento(id: string): Promise<IDocumento> {
     const documento = await this.documentoModel.findById(id).exec();
     if (!documento) {
-      throw new NotFoundException('Documento no encontrado');
+      throw new NotFoundException('Documento no Encontrado');
     }
     return documento;
   }
 
   // * Prepara un documento para descarga
-
   async descargarDocumento(
     id: string
   ): Promise<{ contenido: Buffer; tipo: string }> {
     const documento = await this.obtenerDocumento(id);
+    if (!documento) {
+      throw new NotFoundException('Documento no Descargado');
+    }
     return {
       contenido: documento.contenido,
       tipo: documento.tipo,
@@ -46,7 +51,16 @@ export class DocumentoService {
       new: true,
     });
     if (!documento) {
-      throw new NotFoundException('Documento no encontrado');
+      throw new NotFoundException('Documento no Actualizado');
+    }
+    return documento;
+  }
+
+  // * Eliminar un documento por su ID
+  async eliminardocumento(id: string): Promise<IDocumento | null> {
+    const documento = await this.documentoModel.findByIdAndDelete(id).exec();
+    if (!documento) {
+      throw new NotFoundException('Documento no Eliminado');
     }
     return documento;
   }
