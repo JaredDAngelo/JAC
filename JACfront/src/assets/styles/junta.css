@@ -1,0 +1,74 @@
+.junta-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.junta-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.junta-content {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.junta-image {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.junta-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.junta-form {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.junta-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+}
+
+.junta-form input,
+.junta-form textarea {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+.junta-form button {
+  background-color: #0D47A1;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.junta-form button:hover {
+  background-color: #1565C0;
+}

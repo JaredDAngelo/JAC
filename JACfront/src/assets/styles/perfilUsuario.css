@@ -1,0 +1,23 @@
+.perfil {
+  margin-left: 240px;
+  padding: 2rem;
+}
+
+.perfil-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.perfil-grid div {
+  background: #e8f5e9;
+  padding: 1rem;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.perfil-grid div:hover {
+  background: #c8e6c9;
+}

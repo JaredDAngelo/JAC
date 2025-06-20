@@ -1,0 +1,45 @@
+.libros {
+  padding: 2rem;
+}
+
+.libros h1 {
+  font-size: 2.5rem;
+  color: #013d2d;
+  margin-bottom: 0.5rem;
+}
+
+.libros-subtitle {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 2rem;
+}
+
+.libros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.libro-card {
+  background: #ffffff;
+  border: 2px solid #013d2d;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: #013d2d;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.libro-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.libro-card h2 {
+  margin-bottom: 0.5rem;
+}
+
+.libro-card p {
+  color: #444;
+}
