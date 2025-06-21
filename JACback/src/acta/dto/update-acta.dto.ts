@@ -1,11 +1,5 @@
-import { TipoActa } from './create-acta.dto';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { ActaDto } from './create-acta.dto';
 
-export class ActualizarActaDto {
-  @IsEnum(TipoActa)
-  @IsNotEmpty()
-  tipo: TipoActa;
 
-  @IsNotEmpty()
-  contenido: Buffer;
-}
+export class ActualizarActaDto extends PartialType(ActaDto) {}

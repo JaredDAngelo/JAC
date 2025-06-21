@@ -17,7 +17,7 @@ export class Usuario {
   cedula: number;
 
   @Prop()
-  telefono: number;
+  telefono: string;
 }
 
 export const UsuarioSchema = SchemaFactory.createForClass(Usuario);

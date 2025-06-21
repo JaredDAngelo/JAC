@@ -1,62 +1,62 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {Model} from "mongoose";
-import{ILibro} from "./dto/libro.model";
-import { LibrosDto } from './dto/libro.dto';
-import { LibroModule } from './libro.module';
+import { Model } from 'mongoose';
+import { LibrosDto } from './dto/create-libro.dto';
+import { Libro } from './schema/libro.schema';
 
 @Injectable()
 export class LibroService {
-    constructor(
-        @InjectModel('libro') private readonly libroModel: Model<ILibro>
-    ){}
-//CREAR
-    async crearLibro(librosDto: LibrosDto): Promise<ILibro> {
+  constructor(
+    @InjectModel('libro') private readonly libroModel: Model<Libro>
+  ) {}
+
+  async crearLibro(librosDto: LibrosDto): Promise<Libro> {
     const nuevoLibro = new this.libroModel(librosDto);
-    if(!nuevoLibro){
-        throw new NotFoundException("El libro no ha sido creado");
+    if (!nuevoLibro) {
+      throw new NotFoundException('Libro no Creado');
     }
     return await nuevoLibro.save();
+  }
+
+  async obtenerLibro(id: string): Promise<Libro> {
+    const libro = await this.libroModel.findById(id).exec();
+    if (!libro) {
+      throw new NotFoundException('Libro no Encontrado');
     }
-    //BUSCAR POR ID
-    async obtenerLibro(id:string):Promise<ILibro>{
-        const libro = await this.libroModel.findById(id).exec();
-        if(!libro){
-            throw new NotFoundException("El libro no ha sido encontrado");
-        }
-        return libro;
+    return libro;
+  }
+
+  async descargarLibro(
+    id: string
+  ): Promise<{ contenidoLibro: Buffer; tipo: string }> {
+    const libro = await this.obtenerLibro(id);
+    if (!libro) {
+      throw new NotFoundException('Libro no Descargado');
     }
-    //DESCARGAR LIBRO
-    async descargaLibro(
-        id: string
-    ):
-    Promise<{contenidoLibro: Buffer, tipo: string}>{
-        const libro = await this.obtenerLibro(id);
-        if(!libro){
-            throw new NotFoundException("El libro no ha sido Descargado");
-        }
-        return{
-            contenidoLibro: libro.contenidoLibro,
-            tipo: libro.tipo,
-        };
+    return {
+      contenidoLibro: libro.contenidoLibro,
+      tipo: libro.tipo,
+    };
+  }
+
+  async actualizarLibro(
+    id: string,
+    dto: LibrosDto
+  ): Promise<Libro> {
+    const libro = await this.libroModel.findByIdAndUpdate(id, dto, {
+      new: true,
+    });
+    if (!libro) {
+      throw new NotFoundException('Libro no Actualizado');
     }
-    // ELIMINAR
-    async eliminarLibro(id: string): Promise<ILibro> {
-        const libro= await this.libroModel.findByIdAndDelete(id);
-        if(!libro){
-            throw new NotFoundException("libro no eliminado")
-        }
-             
-        return libro;
+    return libro;
+  }
+
+  async eliminarLibro(id: string): Promise<Libro | null> {
+    const libro = await this.libroModel.findByIdAndDelete(id).exec();
+    if (!libro) {
+      throw new NotFoundException('Libro no Eliminado');
     }
-    //ACTUALIZAR // EDITAR
-    async actualizarLibro(id: string,dto:LibrosDto): Promise<ILibro>{
-        const libro = await this.libroModel.findByIdAndUpdate(id,dto,{
-            new: true,
-        });
-        if (!libro){
-            throw new NotFoundException('Libro actualizado');
-        }
-return libro;
-    }
+    return libro;
+  }
 }

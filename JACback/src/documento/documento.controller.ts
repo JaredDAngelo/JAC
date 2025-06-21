@@ -20,7 +20,6 @@ import { Response } from 'express';
 export class DocumentoController {
   constructor(private readonly documentoService: DocumentoService) {}
 
-  // * Crea un nuevo documento
   @Post()
   @UseInterceptors(FileInterceptor('contenido'))
   async crearDocumento(
@@ -31,13 +30,11 @@ export class DocumentoController {
     return await this.documentoService.crearDocumento(documentoDto);
   }
 
-  // * Obtiene la información de un documento por ID
   @Get(':id')
   async obtenerDocumento(@Param('id') id: string) {
     return await this.documentoService.obtenerDocumento(id);
   }
 
-  // * Descarga un documento por ID
   @Get(':id/descargar')
   async descargarDocumento(@Param('id') id: string, @Res() res: Response) {
     const documento = await this.documentoService.descargarDocumento(id);
@@ -49,7 +46,6 @@ export class DocumentoController {
     res.status(HttpStatus.OK).send(documento.contenido);
   }
 
-  // * Actualiza un documento por ID
   @Patch(':id/actualizar')
   async actualizarDocumento(
     @Param('id') id: string,
@@ -58,7 +54,6 @@ export class DocumentoController {
     return await this.documentoService.actualizarDocumento(id, dto);
   }
 
-  // * Elimina un documento por ID
   @Delete(':id/eliminar')
   async eliminarDocumento(@Param('id') id: string) {
     return await this.documentoService.eliminardocumento(id);

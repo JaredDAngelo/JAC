@@ -1,17 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { IDocumento } from './entities/documento.entity';
 import { DocumentoDto } from './dto/create-documento.dto';
+import { Documento } from './schema/documento.schema';
 
 @Injectable()
 export class DocumentoService {
   constructor(
-    @InjectModel('Documento') private readonly documentoModel: Model<IDocumento>
+    @InjectModel('Documento') private readonly documentoModel: Model<Documento>
   ) {}
 
-  // * Crea un nuevo documento en la base de datos
-  async crearDocumento(documentoDto: DocumentoDto): Promise<IDocumento> {
+  async crearDocumento(documentoDto: DocumentoDto): Promise<Documento> {
     const nuevoDocumento = new this.documentoModel(documentoDto);
     if (!nuevoDocumento) {
       throw new NotFoundException('Documento no Creado');
@@ -19,8 +18,7 @@ export class DocumentoService {
     return await nuevoDocumento.save();
   }
 
-  // * Obtiene un documento por su ID
-  async obtenerDocumento(id: string): Promise<IDocumento> {
+  async obtenerDocumento(id: string): Promise<Documento> {
     const documento = await this.documentoModel.findById(id).exec();
     if (!documento) {
       throw new NotFoundException('Documento no Encontrado');
@@ -28,7 +26,6 @@ export class DocumentoService {
     return documento;
   }
 
-  // * Prepara un documento para descarga
   async descargarDocumento(
     id: string
   ): Promise<{ contenido: Buffer; tipo: string }> {
@@ -42,11 +39,10 @@ export class DocumentoService {
     };
   }
 
-  // * Actualizar un documento por su ID
   async actualizarDocumento(
     id: string,
     dto: DocumentoDto
-  ): Promise<IDocumento> {
+  ): Promise<Documento> {
     const documento = await this.documentoModel.findByIdAndUpdate(id, dto, {
       new: true,
     });
@@ -56,8 +52,7 @@ export class DocumentoService {
     return documento;
   }
 
-  // * Eliminar un documento por su ID
-  async eliminardocumento(id: string): Promise<IDocumento | null> {
+  async eliminardocumento(id: string): Promise<Documento | null> {
     const documento = await this.documentoModel.findByIdAndDelete(id).exec();
     if (!documento) {
       throw new NotFoundException('Documento no Eliminado');

@@ -1,8 +1,9 @@
 import {Module} from "@nestjs/common";
-import {MongooseModule} from "@nestjs/mongoose"; //Crear @nest
+import {MongooseModule} from "@nestjs/mongoose"; 
 import { LibroController } from "./libro.controller";
 import { LibroService } from "./libro.service";
-import { LibroSchema } from "./dto/libro.model"; //invocar Schema
+import { LibroSchema } from "./schema/libro.schema";
+
 
 @Module({
   imports: [

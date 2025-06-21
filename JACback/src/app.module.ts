@@ -7,6 +7,7 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { DocumentoModule } from './documento/documento.module';
 import { ActaModule } from './acta/acta.module';
 import { AuthModule } from './auth/auth.module';
+import { CertificadoModule } from './certificado/certificado.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     DocumentoModule,
     ActaModule,
+    CertificadoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

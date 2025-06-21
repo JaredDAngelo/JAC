@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { IActa } from './entities/acta.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ActaDto } from './dto/create-acta.dto';
+import { Acta } from './schema/acta.schema';
 
 @Injectable()
 export class ActaService {
-  constructor(@InjectModel('Acta') private readonly actaModel: Model<IActa>) {}
+  constructor(@InjectModel('Acta') private readonly actaModel: Model<Acta>) {}
 
-  async CrearActa(actaDto: ActaDto): Promise<IActa> {
+  async CrearActa(actaDto: ActaDto): Promise<Acta> {
     const nuevoActa = new this.actaModel(actaDto);
     if (!nuevoActa) {
       throw new NotFoundException('Acta no creada');
@@ -16,7 +16,7 @@ export class ActaService {
     return await nuevoActa.save();
   }
 
-  async ObtenerActa(id: string): Promise<IActa> {
+  async ObtenerActa(id: string): Promise<Acta> {
     const documentoActa = await this.actaModel.findById(id).exec();
     if (!documentoActa) {
       throw new NotFoundException('Acta no encontrada');
@@ -37,7 +37,7 @@ export class ActaService {
     };
   }
 
-  async actualizarActa(id: string, dto: ActaDto): Promise<IActa> {
+  async actualizarActa(id: string, dto: ActaDto): Promise<Acta> {
     const documentoActa = await this.actaModel.findByIdAndUpdate(id, dto, {
       new: true,
     });
@@ -47,7 +47,7 @@ export class ActaService {
     return documentoActa;
   }
 
-  async eliminarActa(id: string): Promise<IActa> {
+  async eliminarActa(id: string): Promise<Acta> {
     const documentoActa = await this.actaModel.findByIdAndDelete(id);
     if (!documentoActa) {
       throw new NotFoundException('Acta no Eliminada');

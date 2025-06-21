@@ -45,6 +45,7 @@ export class ActaController {
     });
     res.status(HttpStatus.OK).send(documentoActa.contenido);
   }
+  
   @Patch(':id/actualizar')
   async actualizarActa(@Param('id') id: string, @Body() dto: ActaDto) {
     return await this.actaService.actualizarActa(id, dto);

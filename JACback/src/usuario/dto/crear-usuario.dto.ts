@@ -23,6 +23,6 @@ import {
     cedula: number;
   
     @IsString()
-    telefono: number;
+    telefono: string;
   }
   
