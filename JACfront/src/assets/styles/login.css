@@ -5,8 +5,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: 12.7rem;
   box-sizing: border-box;
+  position: relative;
 }
 
 /* ✅ Caja blanca centrada */

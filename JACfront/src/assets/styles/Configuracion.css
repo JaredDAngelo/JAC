@@ -1,0 +1,68 @@
+.settings {
+  padding: 2rem;
+}
+
+.settings h1 {
+  font-size: 2.5rem;
+  color: #013d2d;
+  margin-bottom: 0.5rem;
+}
+
+.settings-subtitle {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 2rem;
+}
+
+.settings-form {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #013d2d;
+  font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #013d2d;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.primary-button {
+  display: block;
+  margin-top: 1rem;
+  background-color: #013d2d;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.primary-button:hover {
+  background-color: #005f46;
+}
+
+.settings-form select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #013d2d;
+  border-radius: 6px;
+  font-size: 1rem;
+}

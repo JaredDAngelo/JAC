@@ -3,7 +3,7 @@ import "../assets/styles/dashboard.css";
 function Dashboard() {
   return (
     <div className="dashboard">
-      <h1>Bienvenido al Panel de Control</h1>
+      <h1>Hola! Jared.</h1>
       <p className="dashboard-subtitle">Aquí encontrarás un resumen de la información clave de tu Junta de Acción Comunal.</p>
 
       <div className="dashboard-widgets">
