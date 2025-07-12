@@ -1,8 +1,24 @@
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
-import { IsNotEmpty } from 'class-validator';
 import { LoginAuthDto } from './login-auth.dto';
 
-export class RegistroAuthDto extends PartialType(LoginAuthDto) { 
-    @IsNotEmpty()
-    nombre: string;
+export class RegistroAuthDto extends PartialType(LoginAuthDto) {
+  @IsNotEmpty()
+  @IsString()
+  nombre: string;
+
+  @IsOptional()
+  @IsNumber()
+  cedula?: number;
+
+  @IsOptional()
+  @IsString()
+  telefono?: string;
 }

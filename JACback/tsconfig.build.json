@@ -1,4 +1,15 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "compilerOptions": {
+    "noEmit": false,         // Asegura que sí se generen los archivos compilados
+    "declaration": true,     // Genera .d.ts para uso de tipos si publicas librerías
+    "emitDeclarationOnly": false // También emite el código JavaScript, no solo los tipos
+  },
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 }
