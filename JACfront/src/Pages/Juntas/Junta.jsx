@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import "../../assets/styles/junta.css";
 
+
+
 function Juntas() {
   const navigate = useNavigate();
 
