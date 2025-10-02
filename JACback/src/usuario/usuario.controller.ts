@@ -12,7 +12,7 @@ import { UsuarioService } from './usuario.service';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'; //importamos el guard de jwt para proteger la ruta de get all usuarios
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; //importamos el guard de jwt para proteger la ruta de get all usuarios
 
 @ApiBearerAuth()
 @ApiTags('Usuario')
