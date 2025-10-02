@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RegistroAuthDto } from './dto/registro-auth.dto';
 import { Model } from 'mongoose';
-import { Usuario , UsuarioDocument } from 'src/usuario/schema/usuario.schema';
+import { Usuario , UsuarioDocument } from '../usuario/schema/usuario.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
