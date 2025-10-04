@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:3000", // Cambia esto si tu backend está en otro puerto/dominio
+  // baseURL: "http://localhost:3000", // Cambia esto si tu backend está en otro puerto/dominio
+  baseURL: "https://jac-backend.onrender.com", // Cambia esto si tu backend está en otro puerto/dominio
 });
 
 // ✅ Interceptor para agregar el token a todas las peticiones

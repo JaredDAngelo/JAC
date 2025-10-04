@@ -1,4 +1,4 @@
-import "../assets/styles/configuracion.css";
+import "../assets/styles/Configuracion.css";
 
 function Configuracion() {
   return (

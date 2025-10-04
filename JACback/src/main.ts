@@ -8,7 +8,8 @@ async function bootstrap() {
 
   // ✅ HABILITAR CORS para permitir peticiones desde el frontend
   app.enableCors({
-    origin: 'http://localhost:5173', // Aquí se define el origen permitido
+    origin: 'https://jacfront-m3gmixp09-jareds-projects-abe0f26a.vercel.app/', // Aquí se define el origen permitido
+    //origin: 'http://localhost:5173', // Aquí se define el origen permitido
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   });

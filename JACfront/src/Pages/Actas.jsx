@@ -1,4 +1,4 @@
-import "../assets/styles/actas.css";
+import "../assets/styles/Actas.css";
 
 function Actas() {
   return (
