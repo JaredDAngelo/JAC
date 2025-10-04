@@ -7,12 +7,27 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // ✅ HABILITAR CORS para permitir peticiones desde el frontend
+  // app.enableCors({
+  //   origin: 'http://localhost:5173', // Aquí se define el origen permitido
+  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  //   credentials: true,
+  // });
+
   app.enableCors({
-    origin: 'https://jacfront-m3gmixp09-jareds-projects-abe0f26a.vercel.app/', // Aquí se define el origen permitido
-    //origin: 'http://localhost:5173', // Aquí se define el origen permitido
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
-  });
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // permite Swagger, Postman, etc.
+    if (
+      origin === 'http://localhost:5173' ||
+      origin.endsWith('.vercel.app')
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+});
+
 
   app.useGlobalPipes(
     new ValidationPipe({
