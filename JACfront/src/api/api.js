@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:3000", // Cambia esto si tu backend está en otro puerto/dominio
+  baseURL: import.meta.env.REACT_APP_API_URL , // Cambia esto si tu backend está en otro puerto/dominio
 });
 
 // ✅ Interceptor para agregar el token a todas las peticiones

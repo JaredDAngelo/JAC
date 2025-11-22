@@ -1,0 +1,24 @@
+services:
+
+  backend:
+    build: ./JACback
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB= 'mongodb+srv://JAC:Colombia2025++@cluster0.uy3al.mongodb.net/JAC'
+    depends_on:
+      - db
+
+  frontend:
+    build: ./JACfront
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      - backend
+
+  db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"

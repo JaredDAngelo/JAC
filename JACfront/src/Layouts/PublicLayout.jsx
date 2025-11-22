@@ -1,12 +1,36 @@
-import Navbar from "../Components/Navbar";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
+import logo from "../assets/images/logo-juntas.svg";
 
 function PublicLayout() {
   return (
-    <>
-      <Navbar />
-      <Outlet />
-    </>
+    <div className="min-h-screen bg-background flex flex-col">
+      <nav className="flex items-center justify-between px-6 py-4 lg:px-12 border-b container">
+        <div className="flex items-center gap-2">
+          <img src={logo} alt="JAC" className="w-10 h-10" />
+          <span className="font-bold text-xl text-primary">JAC</span>
+        </div>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition hidden sm:inline">Inicio</Link>
+          <Link to="/descargas" className="text-sm text-muted-foreground hover:text-foreground transition hidden sm:inline">Descargas</Link>
+          <Link to="/login">
+            <button className="border px-3 py-1 rounded">Iniciar sesión</button>
+          </Link>
+          <Link to="/registro">
+            <button className="border px-3 py-1 rounded">Registrate</button>
+          </Link>
+        </div>
+      </nav>
+
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      <footer className="border-t px-6 py-8 lg:px-12 bg-muted/30">
+        <div className="max-w-6xl mx-auto text-center text-sm text-muted-foreground">
+          <p>© 2025 JAC. Gestión de Juntas de Acción Comunal. Todos los derechos reservados.</p>
+        </div>
+      </footer>
+    </div>
   );
 }
 
