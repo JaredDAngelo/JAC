@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import logo from '../../../assets/images/logo-juntas.svg'
+import auth from '../../../api/auth'
+import { toast } from 'sonner'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
@@ -10,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -17,22 +20,16 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo: email, contraseña: password }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        setError(data.message || 'Error al iniciar sesión')
-        setIsLoading(false)
-        return
-      }
-
-      navigate('/dashboard')
+      const data = await auth.login({ correo: email, contraseña: password })
+  toast.success('Inicio de sesión exitoso')
+  // si venimos de una ruta protegida, redirigir a la ruta solicitada
+  const redirectTo = (location.state && location.state.from && location.state.from.pathname) || '/dashboard'
+  navigate(redirectTo, { replace: true })
     } catch (err) {
-      setError('Error de conexión. Por favor intenta de nuevo.')
+      // err puede ser un Axios error o fetch error; mostrar mensaje en español
+      const msg = (err && err.response && err.response.data && err.response.data.message) || err.message || 'Error al iniciar sesión'
+      toast.error(msg)
+      setError(msg)
     } finally {
       setIsLoading(false)
     }

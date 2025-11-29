@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 import {
   SidebarHeader,
@@ -20,6 +20,8 @@ import {
   SettingsIcon,
   LogOutIcon,
 } from 'lucide-react'
+import { logout } from '../../api/auth'
+import { toast } from 'sonner'
 // Definición de items del sidebar (label, href y componente de icono)
 const menuItems = [
   { label: 'Inicio', href: '/dashboard', icon: HomeIcon },
@@ -101,6 +103,35 @@ export function Sidebar() {
           {bottomItems.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon as any
+
+            // Si es el item de cerrar sesión, renderizamos un botón que llama a logout
+            if (item.label === 'Cerrar Sesión') {
+              const navigate = useNavigate()
+              return (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton asChild isActive={false} tooltip={item.label}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          logout()
+                          toast.success('Sesión finalizada correctamente')
+                        } catch (e) {
+                          // noop
+                        }
+                        navigate('/')
+                      }}
+                      className={cn('flex items-center gap-3 w-full')}
+                    >
+                      <div className="flex items-center justify-center rounded-md w-8 h-8 shrink-0 bg-sidebar-overlay">
+                        {Icon ? <Icon className="size-4 text-sidebar-foreground" /> : <span className="text-lg">?</span>}
+                      </div>
+                      <span className="text-sm font-medium text-sidebar-foreground">{item.label}</span>
+                    </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            }
 
             return (
               <SidebarMenuItem key={item.href}>

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import logo from '../../../assets/images/logo-juntas.svg'
+import auth from '../../../api/auth'
+import { toast } from 'sonner'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({ nombre: '', correo: '', contrasena: '', contrasena_confirmacion: '' })
+  const [formData, setFormData] = useState({ nombre: '', correo: '', contrasena: '', contrasena_confirmacion: '', cedula: '' })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
@@ -19,22 +21,21 @@ export default function RegisterPage() {
       setError('Las contraseñas no coinciden')
       return
     }
+    if (!formData.cedula) {
+      setError('La cédula es obligatoria')
+      return
+    }
     setIsLoading(true)
     try {
-      const res = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: formData.nombre, correo: formData.correo, contrasena: formData.contrasena }),
-      })
-      if (!res.ok) {
-        const data = await res.json()
-        setError(data.message || 'Error al registrarse')
-        setIsLoading(false)
-        return
-      }
+      const payload = { nombre: formData.nombre, correo: formData.correo, contraseña: formData.contrasena, cedula: Number(formData.cedula) };
+      const data = await auth.register(payload);
+      toast.success('Registro exitoso. Puedes iniciar sesión ahora.')
       navigate('/login')
-    } catch {
-      setError('Error de conexión. Por favor intenta de nuevo.')
+    } catch (err) {
+      // Manejar errores provenientes del backend (axios)
+      const msg = (err && err.response && err.response.data && (err.response.data.message || err.response.data.error)) || err.message || 'Error de conexión. Por favor intenta de nuevo.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsLoading(false)
     }
@@ -62,6 +63,24 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm">Correo electrónico</label>
               <input name="correo" type="email" value={formData.correo} onChange={handleChange} required className="w-full border px-3 py-2 rounded" />
+            </div>
+            <div>
+              <label className="block text-sm">Cédula</label>
+              {/* usar input type=text + inputMode para evitar el "contador" de los number inputs y aceptar solo dígitos */}
+              <input
+                name="cedula"
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
+                value={formData.cedula}
+                onChange={(e) => {
+                  // aceptar solo dígitos
+                  const digits = e.target.value.replace(/\D/g, '');
+                  handleChange({ target: { name: 'cedula', value: digits } });
+                }}
+                required
+                className="w-full border px-3 py-2 rounded"
+              />
             </div>
             <div>
               <label className="block text-sm">Contraseña</label>

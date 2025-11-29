@@ -65,7 +65,7 @@ export default function NuevoActaModal({ open, onOpenChange, onCreate }: Props) 
 
           <div className="flex gap-2">
             <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
-            <select className="bg-transparent border rounded px-2" value={estado} onChange={(e) => setEstado(e.target.value)}>
+            <select className="bg-input border rounded px-2" value={estado} onChange={(e) => setEstado(e.target.value)}>
               <option value="Borrador">Borrador</option>
               <option value="Publicada">Publicada</option>
             </select>

@@ -6,25 +6,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Eye, Edit3, Download, Trash2 } from "lucide-react"
+import { MoreHorizontal, Eye, Edit3, Trash2 } from "lucide-react"
 
 interface Props {
   usuarios: Usuario[]
   onView: (u: Usuario) => void
   onEdit: (u: Usuario) => void
-  onDelete: (id: number) => void
-  onDownload: (u: Usuario) => void
+  onDelete: (id: string) => void
+  // Note: descargar y asignar rol se gestionan desde los modales; no se exponen aquí.
 }
 
-export default function UsuariosTable({ usuarios, onView, onEdit, onDelete, onDownload }: Props) {
+export default function UsuariosTable({ usuarios, onView, onEdit, onDelete }: Props) {
   const getRolBadgeColor = (rol: string) => {
     const base = 'px-2 py-1 rounded-full text-sm'
     const colors: Record<string, string> = {
-      Admin: 'bg-red-50 text-red-700 border-red-200',
-      Director: 'bg-blue-50 text-blue-700 border-blue-200',
-      Miembro: 'bg-green-50 text-green-700 border-green-200',
+      admin: 'bg-red-50 text-red-700 border-red-200',
+      director: 'bg-blue-50 text-blue-700 border-blue-200',
+      miembro: 'bg-green-50 text-green-700 border-green-200',
     }
-    return `${base} ${colors[rol] || 'bg-gray-50 text-gray-700'}`
+    const key = (rol || '').toString().toLowerCase()
+    return `${base} ${colors[key] || 'bg-gray-50 text-gray-700'}`
   }
 
   return (
@@ -68,9 +69,7 @@ export default function UsuariosTable({ usuarios, onView, onEdit, onDelete, onDo
                     <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onEdit(usuario)}>
                       <Edit3 className="w-4 h-4" /> Editar
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onDownload(usuario)}>
-                      <Download className="w-4 h-4" /> Descargar
-                    </DropdownMenuItem>
+                    {/* Opciones reducidas: Ver, Editar y Eliminar. Descargar y Asignar rol se gestionan desde el modal de edición. */}
                     <DropdownMenuItem className="gap-2 cursor-pointer text-destructive" onClick={() => onDelete(usuario.id)}>
                       <Trash2 className="w-4 h-4" /> Eliminar
                     </DropdownMenuItem>

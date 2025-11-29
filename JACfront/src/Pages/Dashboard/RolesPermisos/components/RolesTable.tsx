@@ -6,16 +6,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Eye, Edit3, Trash2 } from "lucide-react"
+import { MoreHorizontal, Edit3, Trash2 } from "lucide-react"
 
 interface Props {
   roles: Role[]
-  onView: (r: Role) => void
   onEdit: (r: Role) => void
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
 }
 
-export default function RolesTable({ roles, onView, onEdit, onDelete }: Props) {
+export default function RolesTable({ roles, onEdit, onDelete }: Props) {
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -45,9 +44,6 @@ export default function RolesTable({ roles, onView, onEdit, onDelete }: Props) {
                     <Button variant="ghost" size="sm"><MoreHorizontal /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onView(role)}>
-                      <Eye className="w-4 h-4" /> Ver
-                    </DropdownMenuItem>
                     <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onEdit(role)}>
                       <Edit3 className="w-4 h-4" /> Editar
                     </DropdownMenuItem>

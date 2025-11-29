@@ -9,6 +9,7 @@ import { ActaModule } from './acta/acta.module';
 import { AuthModule } from './auth/auth.module';
 import { CertificadoModule } from './certificado/certificado.module';
 import { JuntaModule } from './junta/junta.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JuntaModule } from './junta/junta.module';
     LibroModule,
     CertificadoModule,
     JuntaModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

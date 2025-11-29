@@ -90,7 +90,7 @@ function LibroCard({
 					<span>Última actualización</span>
 					<span>{libro.actualizado}</span>
 				</div>
-				<Button variant="outline" className="w-full bg-transparent" onClick={() => onView?.(libro)}>
+				<Button variant="outline" className="w-full bg-card" onClick={() => onView?.(libro)}>
 					Abrir libro
 				</Button>
 			</CardContent>

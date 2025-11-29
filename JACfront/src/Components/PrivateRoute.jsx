@@ -1,16 +1,17 @@
 import React from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, Outlet } from 'react-router-dom'
+import auth from '../api/auth'
 
-export default function PrivateRoute({ children }) {
-  // Simple auth check: presence of token in localStorage (adjust to your auth flow)
+export default function PrivateRoute() {
   const location = useLocation()
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  const isAuthenticated = !!token
+  const token = auth.getToken()
+  // Comprobar existencia y expiración del token
+  const isAuthenticated = !!token && !auth.isTokenExpired()
 
   if (!isAuthenticated) {
-    // redirect to login and save attempted location
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  return children
+  // Si está autenticado, renderizamos el Outlet para las rutas anidadas
+  return <Outlet />
 }

@@ -5,32 +5,43 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { AVAILABLE_PERMISSIONS } from "../services/rolesService"
 import { Plus } from "lucide-react"
 import type { Role } from "../interfaces/types"
+import { toast } from 'sonner'
 
 interface Props {
-  onCreate: (r: Omit<Role, 'id'>) => void
+  onCreate: (r: { name: string; description?: string; permissions?: string[] }) => Promise<Role> | void
 }
 
 export default function NuevoRolModal({ onCreate }: Props) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [perms, setPerms] = useState<string[]>([])
+  const [saving, setSaving] = useState(false)
 
-  function togglePerm(p: string) {
-    setPerms((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]))
-  }
+  async function handleCreate() {
+    if (!name.trim()) {
+      toast.error('El nombre del rol es obligatorio')
+      return
+    }
 
-  function handleCreate() {
-    if (!name) return
-    onCreate({ name, description, permissions: perms as any })
-    setName('')
-    setDescription('')
-    setPerms([])
-    setOpen(false)
+    setSaving(true)
+    try {
+  const payload = { name: name.trim(), description: description.trim() }
+      const res = onCreate ? await onCreate(payload) : undefined
+      toast.success('Rol creado correctamente')
+  // reset
+  setName('')
+  setDescription('')
+      setOpen(false)
+      return res
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Error al crear rol'
+      toast.error(msg)
+      throw err
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -50,21 +61,11 @@ export default function NuevoRolModal({ onCreate }: Props) {
             <Input id="rol-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="rol-desc">Descripción</Label>
+            <Label htmlFor="rol-desc">Descripción (opcional)</Label>
             <Input id="rol-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
-          <div>
-            <Label className="mb-2">Permisos</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {AVAILABLE_PERMISSIONS.map((p) => (
-                <label key={p} className="flex items-center gap-2">
-                  <Checkbox checked={perms.includes(p)} onCheckedChange={() => togglePerm(p)} />
-                  <span className="capitalize">{p.replace('_', ' ')}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <Button className="w-full bg-[var(--sidebar)]" onClick={handleCreate}>Crear Rol</Button>
+          {/* Permisos gestionados desde el backend; se omiten en la creación desde la UI */}
+          <Button className="w-full bg-[var(--sidebar)]" onClick={handleCreate} disabled={saving}>{saving ? 'Creando...' : 'Crear Rol'}</Button>
         </div>
       </DialogContent>
     </Dialog>

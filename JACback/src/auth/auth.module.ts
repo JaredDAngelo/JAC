@@ -19,5 +19,6 @@ import { JwtStrategy } from './jwt.strategy'; //importamos el jwt strategy para 
 ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy], //inicializamos el servicio de jwt para poder usarlo en el login y crear el token
+  exports: [JwtModule], // exportar JwtModule para que otros módulos puedan inyectar JwtService
 })
 export class AuthModule {}

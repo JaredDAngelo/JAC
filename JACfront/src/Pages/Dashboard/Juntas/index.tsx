@@ -67,7 +67,7 @@ export default function JuntasPage() {
     setEditFormData(null)
   }
 
-  async function handleDeleteJunta(id: number) {
+  async function handleDeleteJunta(id: string) {
     await deleteJunta(id)
     setJuntas((s) => s.filter((j) => j.id !== id))
   }
@@ -83,7 +83,7 @@ export default function JuntasPage() {
     document.body.removeChild(element)
   }
 
-  async function handleAddJunta(payload: Omit<Junta, "id" | "fecha">) {
+  async function handleAddJunta(payload: any) {
     const created = await createJunta(payload)
     setJuntas((s) => [...s, created])
   }
@@ -197,26 +197,46 @@ export default function JuntasPage() {
                 <p className="font-semibold">{selectedJunta.nombre}</p>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Ubicación</Label>
+                <Label className="text-xs text-muted-foreground">Dirección</Label>
                 <p className="font-semibold">{selectedJunta.ubicacion}</p>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Departamento</Label>
+                  <p className="font-semibold">{selectedJunta.departamento}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Municipio</Label>
+                  <p className="font-semibold">{selectedJunta.municipio}</p>
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Directivo</Label>
+                <Label className="text-xs text-muted-foreground">Barrio</Label>
+                <p className="font-semibold">{selectedJunta.barrio}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Presidente</Label>
                 <p className="font-semibold">{selectedJunta.directivo}</p>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Cédula</Label>
-                <p className="font-semibold">{selectedJunta.cedula}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Vicepresidente</Label>
+                  <p className="font-semibold">{selectedJunta.vicepresidente}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Tesorero</Label>
+                  <p className="font-semibold">{selectedJunta.tesorero}</p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Miembros</Label>
-                <p className="font-semibold">{selectedJunta.miembros}</p>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Estado</Label>
-                <Badge className={selectedJunta.estado === 'Activa' ? 'bg-green-500' : 'bg-gray-500'}>
-                  {selectedJunta.estado}
-                </Badge>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Secretario</Label>
+                  <p className="font-semibold">{selectedJunta.secretario}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Coordinador</Label>
+                  <p className="font-semibold">{selectedJunta.coordinador}</p>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Fecha de Registro</Label>
@@ -239,20 +259,46 @@ export default function JuntasPage() {
                 <Input id="edit-nombre" value={editFormData.nombre || ''} onChange={(e) => setEditFormData({ ...editFormData, nombre: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-ubicacion">Ubicación</Label>
+                <Label htmlFor="edit-ubicacion">Dirección</Label>
                 <Input id="edit-ubicacion" value={editFormData.ubicacion || ''} onChange={(e) => setEditFormData({ ...editFormData, ubicacion: e.target.value })} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-directivo">Directivo</Label>
-                <Input id="edit-directivo" value={editFormData.directivo || ''} onChange={(e) => setEditFormData({ ...editFormData, directivo: e.target.value })} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-departamento">Departamento</Label>
+                  <Input id="edit-departamento" value={editFormData.departamento || ''} onChange={(e) => setEditFormData({ ...editFormData, departamento: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-municipio">Municipio</Label>
+                  <Input id="edit-municipio" value={editFormData.municipio || ''} onChange={(e) => setEditFormData({ ...editFormData, municipio: e.target.value })} />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-cedula">Cédula</Label>
-                <Input id="edit-cedula" value={editFormData.cedula || ''} onChange={(e) => setEditFormData({ ...editFormData, cedula: e.target.value })} />
+                <Label htmlFor="edit-barrio">Barrio</Label>
+                <Input id="edit-barrio" value={editFormData.barrio || ''} onChange={(e) => setEditFormData({ ...editFormData, barrio: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-miembros">Miembros</Label>
-                <Input id="edit-miembros" type="number" value={editFormData.miembros || ''} onChange={(e) => setEditFormData({ ...editFormData, miembros: parseInt(e.target.value) })} />
+                <Label htmlFor="edit-presidente">Presidente</Label>
+                <Input id="edit-presidente" value={editFormData.directivo || ''} onChange={(e) => setEditFormData({ ...editFormData, directivo: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-vicepresidente">Vicepresidente</Label>
+                  <Input id="edit-vicepresidente" value={editFormData.vicepresidente || ''} onChange={(e) => setEditFormData({ ...editFormData, vicepresidente: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-tesorero">Tesorero</Label>
+                  <Input id="edit-tesorero" value={editFormData.tesorero || ''} onChange={(e) => setEditFormData({ ...editFormData, tesorero: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-secretario">Secretario</Label>
+                  <Input id="edit-secretario" value={editFormData.secretario || ''} onChange={(e) => setEditFormData({ ...editFormData, secretario: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-coordinador">Coordinador</Label>
+                  <Input id="edit-coordinador" value={editFormData.coordinador || ''} onChange={(e) => setEditFormData({ ...editFormData, coordinador: e.target.value })} />
+                </div>
               </div>
               <Button className="w-full bg-primary" onClick={handleSaveEdit}>
                 Guardar Cambios

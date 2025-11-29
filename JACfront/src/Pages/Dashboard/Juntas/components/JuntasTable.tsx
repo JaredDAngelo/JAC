@@ -10,7 +10,7 @@ interface Props {
   juntas: Junta[]
   onView?: (j: Junta) => void
   onEdit?: (j: Junta) => void
-  onDelete?: (id: number) => void
+  onDelete?: (id: string) => void
   onDownload?: (j: Junta) => void
 }
 
@@ -29,7 +29,7 @@ export default function JuntasTable({ juntas, onView, onEdit, onDelete, onDownlo
       </TableHeader>
       <TableBody>
         {juntas.map((junta) => (
-          <TableRow key={junta.id} className="hover:bg-muted/50 transition-colors">
+            <TableRow key={junta.id} className="hover:bg-muted/50 transition-colors">
             <TableCell className="font-semibold">{junta.nombre}</TableCell>
             <TableCell>
               <div className="flex items-center gap-2 text-sm">

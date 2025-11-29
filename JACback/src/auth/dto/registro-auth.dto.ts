@@ -14,9 +14,9 @@ export class RegistroAuthDto extends PartialType(LoginAuthDto) {
   @IsString()
   nombre: string;
 
-  @IsOptional()
   @IsNumber()
-  cedula?: number;
+  @IsNotEmpty()
+  cedula: number;
 
   @IsOptional()
   @IsString()

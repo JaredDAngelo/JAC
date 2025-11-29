@@ -20,6 +20,12 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 export class JuntaController {
   constructor(private readonly juntaService: JuntaService) {}
 
+  @Get()
+  @ApiResponse({ status: 200, description: 'Listado de juntas' })
+  async listarJuntas() {
+    return this.juntaService.listarJuntas();
+  }
+
   @Post()
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Junta creada exitosamente' })
   async crearJunta(@Body() juntaDto: JuntaDto) {

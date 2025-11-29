@@ -27,6 +27,10 @@ export class JuntaService {
     return juntaGuardada;
   }
 
+  async listarJuntas(): Promise<Junta[]> {
+    return this.juntaModel.find().exec();
+  }
+
   async obtenerJunta(id: string): Promise<Junta> {
     const junta = await this.juntaModel.findById(id).exec();
     if (!junta) {

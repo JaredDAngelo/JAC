@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from 'sonner';
 import PublicLayout from "./Layouts/PublicLayout";
 import PrivateLayout from "./Layouts/PrivateLayout";
 import PrivateRoute from "./components/PrivateRoute"; // simple placeholder for now
+import AdminRoute from './components/AdminRoute'
 
 // Páginas públicas (usando nuevas vistas organizadas)
 import Home from "./Pages/Home";
@@ -36,28 +38,31 @@ function App() {
         </Route>
 
         {/* Layout privado: Panel con autenticación */}
-        <Route element={<PrivateRoute><PrivateLayout /></PrivateRoute>}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* Listado de juntas (plural) */}
-          <Route path="/dashboard/juntas" element={<Junta />} />
-          {/* Ruta singular antigua (legacy) kept for compatibility */}
-          <Route path="/dashboard/junta" element={<Junta />} />
-          <Route path="/dashboard/juntas/registrar" element={<RegistrarJAC />} />
+        <Route element={<PrivateRoute />}>
+          <Route element={<PrivateLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            {/* Listado de juntas (plural) */}
+            <Route path="/dashboard/juntas" element={<Junta />} />
+            {/* Ruta singular antigua (legacy) kept for compatibility */}
+            <Route path="/dashboard/junta" element={<Junta />} />
+            <Route path="/dashboard/juntas/registrar" element={<RegistrarJAC />} />
 
-          {/* Subvistas de libros (anidadas bajo /dashboard) */}
-          <Route path="/dashboard/libros" element={<Libros />} />
+            {/* Subvistas de libros (anidadas bajo /dashboard) */}
+            <Route path="/dashboard/libros" element={<Libros />} />
 
-          <Route path="/dashboard/certificados" element={<Certificados />} />
-          <Route path="/dashboard/actas" element={<Actas />} />
-          <Route path="/dashboard/usuarios" element={<Usuarios />} />
-          <Route path="/dashboard/roles-permisos" element={<RolesPermisos />} />
-          <Route path="/dashboard/perfil" element={<PerfilUsuario />} />
-          <Route path="/dashboard/configuracion" element={<Configuracion />} />
+            <Route path="/dashboard/certificados" element={<Certificados />} />
+            <Route path="/dashboard/actas" element={<Actas />} />
+            <Route path="/dashboard/usuarios" element={<Usuarios />} />
+            <Route path="/dashboard/roles-permisos" element={<RolesPermisos />} />
+            <Route path="/dashboard/perfil" element={<PerfilUsuario />} />
+            <Route path="/dashboard/configuracion" element={<Configuracion />} />
+          </Route>
         </Route>
 
         {/* 404 - Ruta no encontrada */}
         <Route path="*" element={<Notfound />} />
       </Routes>
+      <Toaster position="top-right" />
     </BrowserRouter>
   );
 }
