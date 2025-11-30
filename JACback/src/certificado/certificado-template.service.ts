@@ -41,9 +41,9 @@ export class CertificadoTemplateService {
     const headerPath = join(this.templatesPath, 'header.png');
 
     if (fs.existsSync(headerPath)) {
-      doc.image(headerPath, 50, 45, { width: 500 });
+      doc.image(headerPath, 50, 45, { width: 250 });
     }
-    doc.moveDown(3);
+    doc.moveDown(6);
   }
 
   private addFooter(doc: PDFKit.PDFDocument) {
@@ -51,16 +51,8 @@ export class CertificadoTemplateService {
     const pageHeight = doc.page.height;
 
     if (fs.existsSync(footerPath)) {
-      doc.image(footerPath, 50, pageHeight - 100, { width: 500 });
+      doc.image(footerPath, 50, pageHeight - 110, { width: 500 });
     }
-
-    // Número de página
-    doc
-      .fontSize(10)
-      .text(`Página ${doc.bufferedPageRange().count}`, 50, pageHeight - 30, {
-        align: 'center',
-        width: 500,
-      });
   }
 
   private addMainContent(doc: PDFKit.PDFDocument, dto: CreateCertificadoDto) {
@@ -71,45 +63,57 @@ export class CertificadoTemplateService {
 
     // Subtítulo (DECALDAS) - centrado
     doc.font('Helvetica-Bold').fontSize(14);
-    doc.text('DECALDAS', { align: 'center' });
-    doc.moveDown(1);
-
-    // Número de página (1 / 2) - centrado
-    doc.font('Helvetica').fontSize(12);
-    doc.text('1 / 2', { align: 'center' });
+    doc.text('GOBERNACION DE CALDAS', { align: 'center' });
     doc.moveDown(2);
 
     // Contenido principal - centrado
     doc.font('Helvetica').fontSize(12);
     doc.text(this.getContenidoCertificado(dto), {
-      align: 'center',
-      width: 450,
+      align: 'justify',
+      width: 500,
       lineGap: 5,
     });
     doc.moveDown(4);
 
     // Fecha y lugar - alineado a la derecha
-    const fechaFormateada = this.formatDate(this.parseFecha(dto.fechaEmision));
+    const fechaFormateada = this.formatDate(new Date());
     doc.text(`En ${dto.ciudadEmision}, a ${fechaFormateada}`, {
       align: 'right',
     });
-    doc.moveDown(4);
+    doc.moveDown(10);
 
     // Firmas - una al lado de la otra
     const yPosition = doc.y;
     const pageWidth = doc.page.width - 100; // Margen izquierdo y derecho de 50
 
-    // Firma izquierda
+    // Firma izquierda}
+    const firmaSecPath = join(this.templatesPath, 'firmaa.png');
+
+    if (fs.existsSync(firmaSecPath)) {
+      doc.image(firmaSecPath, 50, yPosition - 60, { width: 120, height: 60 });
+    }
+
     doc.text(
-      `___________________________\n${dto.nombreSecretario}\n${dto.cargoSecretario}`,
+      `___________________________\n${'ALBERTO HOYOS LÓPEZ'}\n${'Secretario General'}`,
       50,
       yPosition,
       { width: pageWidth / 2, align: 'left' },
     );
 
     // Firma derecha
+    const firmaGobPath = join(this.templatesPath, 'firmah.png');
+
+    const xRight = 50 + pageWidth / 2;
+
+    if (fs.existsSync(firmaGobPath)) {
+      doc.image(firmaGobPath, xRight + 120, yPosition - 60, {
+        width: 120,
+        height: 70,
+      });
+    }
+
     doc.text(
-      `___________________________\n${dto.nombreGobernador}\nGobernador(a)`,
+      `___________________________\n${'HENRY GUTIERREZ ANGEL'}\n${'Gobernador'}`,
       50 + pageWidth / 2,
       yPosition,
       { width: pageWidth / 2, align: 'right' },
@@ -139,24 +143,30 @@ export class CertificadoTemplateService {
 
   private getTituloCertificado(tipo: TipoCertificado): string {
     const titulos = {
-      [TipoCertificado.GUIA_ESTATUTO]: 'CERTIFICADO DE GUÍA ESTATUTARIA',
-      [TipoCertificado.ACTA_CONSTITUCION]:
-        'CERTIFICADO DE ACTA DE CONSTITUCIÓN',
-      [TipoCertificado.ACTA_ELECCION]:
-        'CERTIFICADO DE ACTA DE ELECCIÓN DE DESTINATARIO',
-      [TipoCertificado.ASAMBLEA_CONSTITUCION]:
-        'CERTIFICADO DE ASAMBLEA DE CONSTITUCIÓN',
-      [TipoCertificado.INTERES_ASOCIATIVO]: 'CERTIFICADO DE INTERÉS ASOCIATIVO',
+      [TipoCertificado.ACTA_EXISTENCIA]: 'CERTIFICADO DE ACTA DE EXISTENCIA',
+      [TipoCertificado.ACTA_DIRECTIVOS]: 'CERTIFICADO DE ACTA DE DIRECTIVOS',
+      [TipoCertificado.ACTA_LIBROS]: 'CERTIFICADO DE ACTA DE LIBROS',
+      [TipoCertificado.CERTIFICADO_ACTA]: 'CERTIFICADO DE ACTAS',
     };
     return titulos[tipo];
   }
 
   private getContenidoCertificado(dto: CreateCertificadoDto): string {
+    const fecha = new Date(dto.fechaEmision);
+    const fechaFormateada = fecha.toLocaleDateString('es-CO', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
     return (
-      `Por medio del presente documento se certifica que ${dto.nombreJunta}, ` +
-      `identificada con radicado número ${dto.numeroRadicado}, ha cumplido con ` +
-      `todos los requisitos establecidos por la normativa vigente para la ` +
-      `constitución y funcionamiento de las organizaciones de este tipo.`
+      `La junta de acción comunal ${dto.nombreJunta}, en ejercicio de las facultades conferidas por la normativa ` +
+      `vigente que regula la organización, funcionamiento y actuación de las entidades de ` +
+      `carácter comunitario, certifica que en la ciudad de ${dto.ciudadEmision}, el día ` +
+      `${fechaFormateada}, fue expedido un documento oficial cuya emisión se realizó en ` +
+      `debida forma y conforme a los procedimientos internos establecidos. ` +
+      `Dicho documento se encuentra incorporado en los registros institucionales y conserva ` +
+      `plena validez para los fines administrativos, comunitarios y legales que puedan ` +
+      `derivarse de su consulta o presentación ante las autoridades competentes.`
     );
   }
 }
