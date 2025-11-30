@@ -1,24 +1,72 @@
-import type { Acta } from "../interfaces/types"
+import API from '@/api/api'
 
-const mockActas: Acta[] = [
-  { id: 1, numero: "001/2024", fecha: "2024-11-10", junta: "JAC Centro", asunto: "Asamblea General Ordinaria", estado: "Publicada" },
-  { id: 2, numero: "002/2024", fecha: "2024-10-15", junta: "JAC Centro", asunto: "Elección de Directiva", estado: "Publicada" },
-  { id: 3, numero: "003/2024", fecha: "2024-09-20", junta: "JAC Norte", asunto: "Revisión de Finanzas", estado: "Borrador" },
-  { id: 4, numero: "004/2024", fecha: "2024-08-10", junta: "JAC Sur", asunto: "Aprobación de Presupuesto", estado: "Publicada" },
-]
+/*
+  Servicio `actasService`
 
-export async function getActas(): Promise<Acta[]> {
-  return new Promise((res) => setTimeout(() => res([...mockActas]), 120))
+  - Provee las llamadas HTTP necesarias para la vista de Actas:
+    - `getActas`: obtiene la lista de actas desde el backend.
+    - `createActa`: creación con subida de archivo (FormData).
+    - `updateActa`: actualización parcial (PATCH) de campos simples.
+    - `fetch` / `download` helpers para obtener blobs PDF (se usan para vista/descarga con auth).
+*/
+
+export type ActaItem = {
+  id: string
+  tipo: string
+  creado?: string
+  actualizado?: string
+  junta?: string
 }
 
-export async function createActa(payload: Omit<Acta, "id">): Promise<Acta> {
-  const newActa: Acta = { id: Date.now(), ...payload }
-  mockActas.unshift(newActa)
-  return new Promise((res) => setTimeout(() => res(newActa), 120))
+export async function getActas(): Promise<ActaItem[]> {
+  const res = await API.get('/acta')
+  const data = res.data || []
+  return (data || []).map((a: any) => ({ id: String(a._id ?? a.id ?? ''), tipo: a.tipo ?? '', creado: a.createdAt ?? a.creado ?? '', actualizado: a.updatedAt ?? a.actualizado ?? '', junta: (a.junta && (typeof a.junta === 'string' ? a.junta : (a.junta._id ?? a.junta.id ?? a.junta.nombreJunta ?? a.junta.nombre))) ?? '' }))
 }
 
-export async function deleteActa(id: number): Promise<void> {
-  const idx = mockActas.findIndex((a) => a.id === id)
-  if (idx >= 0) mockActas.splice(idx, 1)
-  return new Promise((res) => setTimeout(() => res(), 80))
+export async function getActaById(id: string) {
+  const res = await API.get(`/acta/${id}`)
+  return res.data
 }
+
+export async function createActa(formData: FormData) {
+  const res = await API.post('/acta', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  return res.data
+}
+
+export async function updateActa(id: string, payload: any) {
+  // Si se envía FormData (archivo para reemplazar), enviarlo como multipart
+  if (payload instanceof FormData) {
+    const res = await API.patch(`/acta/${id}/actualizar`, payload, { headers: { 'Content-Type': 'multipart/form-data' } })
+    return res.data
+  }
+  const body: any = {}
+  if (payload.tipo !== undefined) body.tipo = payload.tipo
+  if (payload.junta !== undefined) body.junta = payload.junta
+  const res = await API.patch(`/acta/${id}/actualizar`, body)
+  return res.data
+}
+
+export async function deleteActa(id: string) {
+  const res = await API.delete(`/acta/${id}/eliminar`)
+  return res.data
+}
+
+export async function fetchActaBlob(id: string): Promise<Blob> {
+  const res = await API.get(`/acta/${id}/descargar`, { responseType: 'blob' })
+  return res.data as Blob
+}
+
+export async function downloadActa(id: string, filename?: string) {
+  const res = await API.get(`/acta/${id}/descargar`, { responseType: 'blob' })
+  const blob = res.data
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename || `${id}.pdf`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => window.URL.revokeObjectURL(url), 1000)
+}
+

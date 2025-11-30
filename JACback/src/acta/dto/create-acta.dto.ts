@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsOptional, IsMongoId, IsNotEmpty } from 'class-validator';
 
 export enum TipoActa {
   ACTA_DE_CONSTITUCION             = 'acta_constitucion',
@@ -10,6 +10,10 @@ export class ActaDto {
   @IsNotEmpty()
   tipo: TipoActa;
 
-  @IsNotEmpty()
-  contenido: Buffer;
+  @IsOptional()
+  @IsMongoId()
+  junta?: string;
+
+  @IsOptional()
+  contenido?: Buffer;
 }

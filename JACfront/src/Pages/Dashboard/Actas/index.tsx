@@ -1,265 +1,232 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import ActasTable from "./components/ActasTable"
-import NuevoActaModal from "./components/NuevoActaModal"
-import type { Acta } from "./interfaces/types"
-import { getActas, createActa } from "./services/actasService"
+/*
+  Página de Actas
+  - Lista actas desde backend
+  - Permite crear (subir PDF), ver en modal, descargar, editar tipo y eliminar
+*/
+
+import { useEffect, useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import ActaCard from './components/ActaCard'
+import EditForm from './components/EditForm'
+import NuevoActaModal from './components/NuevoActaModal'
+import { getActas, fetchActaBlob, downloadActa, deleteActa, getActaById, updateActa } from './services/actasService'
+import { getJuntas } from '@/Pages/Dashboard/Juntas/services/juntasService'
 
 export default function ActasPage() {
-	const [isOpen, setIsOpen] = useState(false)
-	const [actas, setActas] = useState<Acta[]>([])
-	const [loading, setLoading] = useState(false)
-	const [viewOpen, setViewOpen] = useState(false)
-	const [selectedActa, setSelectedActa] = useState<Acta | null>(null)
-	const [editOpen, setEditOpen] = useState(false)
-	const [editFormData, setEditFormData] = useState<Partial<Acta> | null>(null)
-	const [searchTerm, setSearchTerm] = useState("")
-	const [filterEstado, setFilterEstado] = useState("Todas")
+  const [actas, setActas] = useState<any[] | null>(null)
+  const [juntasList, setJuntasList] = useState<any[]>([])
+  const [search, setSearch] = useState('')
+  const [viewActa, setViewActa] = useState<any | null>(null)
+  const [viewBlobUrl, setViewBlobUrl] = useState<string | null>(null)
+  const [editActa, setEditActa] = useState<any | null>(null)
+  const [loadingView, setLoadingView] = useState(false)
+  const [openFilters, setOpenFilters] = useState(false)
+  const [selectedTipos, setSelectedTipos] = useState<string[]>([])
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null)
 
-	const filteredActas = useMemo(() => {
-		return actas.filter((acta) => {
-			const matchesSearch =
-				acta.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				acta.junta.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				acta.asunto.toLowerCase().includes(searchTerm.toLowerCase())
-			const matchesEstado = filterEstado === "Todas" || acta.estado === filterEstado
-			return matchesSearch && matchesEstado
-		})
-	}, [actas, searchTerm, filterEstado])
+  useEffect(() => { load(); loadJuntas() }, [])
 
-  useEffect(() => {
-	setLoading(true)
-	getActas()
-	  .then((data) => setActas(data))
-	  .finally(() => setLoading(false))
-  }, [])
-
-  async function handleCreate(payload: Omit<Acta, "id">) {
-	const created = await createActa(payload)
-	setActas((s) => [created, ...s])
+  async function load() {
+    try {
+      const data = await getActas()
+      setActas(data)
+    } catch (e) {
+      console.error('getActas failed', e)
+      setActas([])
+    }
   }
 
-	function handleEdit(acta: Acta) {
-		setEditFormData(acta)
-		setSelectedActa(acta)
-		setEditOpen(true)
-	}
+  async function loadJuntas() {
+    try {
+      const js = await getJuntas()
+      setJuntasList(js)
+    } catch (e) {
+      console.error('getJuntas failed', e)
+      setJuntasList([])
+    }
+  }
 
-	function handleSaveEdit() {
-		if (!editFormData) return
-		setActas((s) => s.map((a) => (a.id === editFormData.id ? (editFormData as Acta) : a)))
-		setEditOpen(false)
-		setEditFormData(null)
-	}
+  function openDeleteDialog(acta: any) {
+    setDeleteTarget(acta)
+    setDeleteDialogOpen(true)
+  }
 
-	function handleDelete(id: number) {
-		setActas((s) => s.filter((a) => a.id !== id))
-	}
+  function closeDeleteDialog() {
+    setDeleteTarget(null)
+    setDeleteDialogOpen(false)
+  }
 
-	function handleView(acta: Acta) {
-		setSelectedActa(acta)
-		setViewOpen(true)
-	}
+  async function handleDeleteConfirmed() {
+    if (!deleteTarget) return
+    try {
+      await deleteActa(deleteTarget.id)
+      toast.success('Acta eliminada')
+      setActas((prev) => (prev || []).filter((a: any) => a.id !== deleteTarget.id))
+    } catch (e) {
+      console.error('deleteActa failed', e)
+      toast.error('No se pudo eliminar la acta')
+    } finally {
+      closeDeleteDialog()
+    }
+  }
 
-	function handleDownload(acta: Acta) {
-		const content = `Acta: ${acta.numero}\n\nFecha: ${acta.fecha}\nJunta: ${acta.junta}\nAsunto: ${acta.asunto}\nEstado: ${acta.estado}\n\n${acta.contenido || ''}`
-		const el = document.createElement("a")
-		el.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(content))
-		el.setAttribute("download", `Acta_${acta.numero}.txt`)
-		el.style.display = "none"
-		document.body.appendChild(el)
-		el.click()
-		document.body.removeChild(el)
-	}
+  async function handleSaveEdit(updated: any) {
+    try {
+      if (updated.formData) {
+        // Actualización multipart: reemplazo del documento (envío FormData)
+        await updateActa(updated.id, updated.formData)
+      } else {
+        await updateActa(updated.id, { tipo: updated.tipo, junta: updated.junta })
+        setActas((prev) => (prev || []).map((a: any) => (a.id === updated.id ? { ...a, tipo: updated.tipo, junta: updated.junta } : a)))
+      }
+      toast.success('Acta actualizada')
+    } catch (e) {
+      console.error('updateActa failed', e)
+      toast.error('No se pudo actualizar la acta')
+    }
+    setEditActa(null)
+  }
 
-	const SearchIcon = () => (
-		<svg className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-		</svg>
-	)
+  if (!actas) return <div className="p-4">Cargando actas...</div>
 
-	return (
-	<div className="space-y-6 p-4 md:p-8">
-	  {/* Header */}
-	  <div>
-		<div className="flex items-center gap-3 mb-2">
-		  <div className="p-2 bg-[var(--sidebar)]/10 rounded-lg">
-			{/* icon retained visually */}
-			<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			  <path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-			  />
-			</svg>
-		  </div>
-		  <h1 className="text-3xl font-bold tracking-tight">Actas de Reuniones</h1>
-		</div>
-		<p className="text-muted-foreground">Crea, edita y descarga actas de reuniones</p>
-	  </div>
+  return (
+    <div className="p-4 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Actas</h1>
+        <NuevoActaModal juntas={juntasList} onCreated={async (created: any) => { toast.success('Acta creada'); await load() }} />
+      </div>
 
-	  {/* Stats */}
-	  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-		<Card className="border-l-4 border-l-primary">
-		  <CardContent className="pt-6">
-			<div className="text-2xl font-bold">{actas.length}</div>
-			<p className="text-sm text-muted-foreground">Total de Actas</p>
-		  </CardContent>
-		</Card>
-		<Card className="border-l-4 border-l-green-400">
-		  <CardContent className="pt-6">
-			<div className="text-2xl font-bold">{actas.filter((a) => a.estado === "Publicada").length}</div>
-			<p className="text-sm text-muted-foreground">Publicadas</p>
-		  </CardContent>
-		</Card>
-		<Card className="border-l-4 border-l-yellow-400">
-		  <CardContent className="pt-6">
-			<div className="text-2xl font-bold">{actas.filter((a) => a.estado === "Borrador").length}</div>
-			<p className="text-sm text-muted-foreground">En Borrador</p>
-		  </CardContent>
-		</Card>
-	  </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <Input placeholder="Buscar actas por tipo..." value={search} onChange={(e) => setSearch((e.target as HTMLInputElement).value)} />
+        </div>
+        <div className="relative">
+          <button className="px-3 py-2 border rounded-md bg-white" onClick={() => setOpenFilters((s) => !s)}>Filtros</button>
+          {openFilters && (
+            <div className="absolute right-0 mt-2 w-56 p-3 bg-popover border rounded shadow z-50">
+              <div className="text-sm font-medium mb-2">Filtrar por tipo</div>
+              <label className="flex items-center mb-1"><input type="checkbox" className="mr-2" checked={selectedTipos.includes('acta_constitucion')} onChange={(e) => {
+                setSelectedTipos((prev) => e.target.checked ? [...prev, 'acta_constitucion'] : prev.filter((x) => x !== 'acta_constitucion'))
+              }} /> Acta de Constitución</label>
+              <label className="flex items-center mb-1"><input type="checkbox" className="mr-2" checked={selectedTipos.includes('acta_eleccion_destinatario')} onChange={(e) => {
+                setSelectedTipos((prev) => e.target.checked ? [...prev, 'acta_eleccion_destinatario'] : prev.filter((x) => x !== 'acta_eleccion_destinatario'))
+              }} /> Acta de Elección de Destinatario</label>
+              <div className="text-xs text-muted-foreground mt-2">Filtradas: {selectedTipos.length || 0}</div>
+            </div>
+          )}
+        </div>
+      </div>
 
-			{/* Barra de filtros */}
-			<Card className="border-0 shadow-md">
-				<CardHeader className="border-b">
-					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-						<div className="flex-1">
-							<Label htmlFor="search" className="text-sm">Buscar</Label>
-							<div className="relative mt-2">
-								<SearchIcon />
-								<Input id="search" placeholder="Número, junta o asunto..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-							</div>
-						</div>
-						<div className="w-full md:w-48">
-							<Label htmlFor="estado" className="text-sm">Estado</Label>
-							<Select value={filterEstado} onValueChange={setFilterEstado}>
-								<SelectTrigger className="mt-2">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="Todas">Todas</SelectItem>
-									<SelectItem value="Publicada">Publicada</SelectItem>
-									<SelectItem value="Borrador">Borrador</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-				</CardHeader>
-			</Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {actas.filter((a: any) => {
+          if (selectedTipos && selectedTipos.length > 0) {
+            if (!selectedTipos.includes(a.tipo)) return false
+          }
+          if (!search) return true
+          return (a.tipo || '').toLowerCase().includes(search.toLowerCase())
+        }).map((acta) => (
+          <ActaCard
+            key={acta.id}
+            acta={acta}
+            juntas={juntasList}
+            onView={async (it: any) => {
+              setViewActa(it)
+              setLoadingView(true)
+              try {
+                const b = await fetchActaBlob(it.id)
+                const url = window.URL.createObjectURL(new Blob([b], { type: 'application/pdf' }))
+                setViewBlobUrl(url)
+              } catch (e) {
+                console.error('fetchActaBlob failed', e)
+                toast.error('No se pudo cargar el archivo')
+                setViewActa(null)
+              } finally { setLoadingView(false) }
+            }}
+            onDownload={(it: any) => downloadActa(it.id, `${it.tipo}.pdf`)}
+            onEdit={async (it: any) => {
+              try {
+                const full = await getActaById(it.id)
+                const juntaId = full.junta ? (typeof full.junta === 'string' ? full.junta : (full.junta._id ?? full.junta.id ?? '')) : ''
+                setEditActa({ id: String(full._id ?? full.id ?? it.id), tipo: full.tipo ?? it.tipo, junta: juntaId })
+              } catch (e) {
+                console.error('getActaById failed', e)
+                setEditActa(it)
+              }
+            }}
+            onDelete={(it: any) => openDeleteDialog(it)}
+          />
+        ))}
+      </div>
 
-			{/* New Acta Button and Table */}
-	  <div className="space-y-4">
-		<div className="flex justify-end">
-		  <Button className="gap-2 bg-[var(--sidebar)]" onClick={() => setIsOpen(true)}>
-			Nueva Acta
-		  </Button>
-		  <NuevoActaModal open={isOpen} onOpenChange={setIsOpen} onCreate={(d) => handleCreate(d)} />
-		</div>
+      <Dialog open={!!viewActa} onOpenChange={(o) => { if (!o) { setViewActa(null); if (viewBlobUrl) { window.URL.revokeObjectURL(viewBlobUrl); setViewBlobUrl(null) } } }}>
+        <DialogContent className="max-w-6xl w-full overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Detalle Acta</DialogTitle>
+          </DialogHeader>
+          {viewActa && (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <strong>Tipo:</strong> {viewActa.tipo}
+                  <div><strong>Junta:</strong> {viewActa.junta ?? '—'}</div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => downloadActa(viewActa.id, `${viewActa.tipo}.pdf`)}>Descargar</Button>
+                  <Button size="sm" variant="ghost" onClick={() => viewBlobUrl && window.open(viewBlobUrl, '_blank')}>Abrir en nueva pestaña</Button>
+                </div>
+              </div>
+              <div>
+                <strong>Creado:</strong> {viewActa.creado ? new Date(viewActa.creado).toLocaleString() : '—'}
+              </div>
+              <div className="mt-2">
+                {loadingView && <div>Cargando archivo...</div>}
+                {!loadingView && viewBlobUrl && (
+                  <div className="w-full h-[80vh] overflow-auto border rounded">
+                    <iframe title="visor-acta" src={viewBlobUrl} className="w-full h-full" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-						<Card>
-							<div className="p-2">
-								<ActasTable actas={filteredActas} onView={(a) => handleView(a)} onEdit={(a) => handleEdit(a)} onDownload={(a) => handleDownload(a)} onDelete={(id) => handleDelete(id)} />
-								{loading && <div className="text-sm text-muted-foreground mt-2">Cargando...</div>}
-							</div>
-						</Card>
-	  </div>
-					{/* Detalle de Acta (Dialog) */}
-					<Dialog open={viewOpen} onOpenChange={setViewOpen}>
-						<DialogContent className="max-w-2xl">
-							<DialogHeader>
-								<DialogTitle>Detalles del Acta</DialogTitle>
-							</DialogHeader>
-							{selectedActa && (
-								<div className="space-y-4 py-4">
-									<div className="grid grid-cols-2 gap-4">
-										<div className="space-y-2">
-											<Label className="text-xs text-muted-foreground">Acta #</Label>
-											<p className="font-semibold">{selectedActa.numero}</p>
-										</div>
-										<div className="space-y-2">
-											<Label className="text-xs text-muted-foreground">Fecha</Label>
-											<p className="font-semibold">{selectedActa.fecha}</p>
-										</div>
-									</div>
-									<div className="space-y-2">
-										<Label className="text-xs text-muted-foreground">Junta</Label>
-										<p className="font-semibold">{selectedActa.junta}</p>
-									</div>
-									<div className="space-y-2">
-										<Label className="text-xs text-muted-foreground">Asunto</Label>
-										<p className="font-semibold">{selectedActa.asunto}</p>
-									</div>
-									<div className="space-y-2">
-										<Label className="text-xs text-muted-foreground">Contenido</Label>
-										<p className="text-sm text-muted-foreground">{selectedActa.contenido}</p>
-									</div>
-									<div className="space-y-2">
-										<Label className="text-xs text-muted-foreground">Estado</Label>
-										<Badge className={selectedActa.estado === 'Publicada' ? 'bg-green-500' : 'bg-yellow-500'}>
-											{selectedActa.estado}
-										</Badge>
-									</div>
-								</div>
-							)}
-						</DialogContent>
-					</Dialog>
+      {/* Confirmación de eliminación */}
+      <Dialog open={deleteDialogOpen} onOpenChange={(o) => { if (!o) closeDeleteDialog() }}>
+        <DialogContent className="max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>Eliminar acta</DialogTitle>
+          </DialogHeader>
+          {deleteTarget && (
+            <div className="space-y-4">
+              <div>
+                <p>¿Estás seguro que deseas eliminar la acta <strong>{deleteTarget.tipo}</strong>?</p>
+                <p className="text-sm text-muted-foreground">Esta acción no se puede deshacer.</p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={closeDeleteDialog}>Cancelar</Button>
+                <Button variant="destructive" className="bg-red-600 text-white hover:bg-red-700 border-transparent" onClick={handleDeleteConfirmed}>Eliminar</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-					{/* Edit Dialog */}
-					<Dialog open={editOpen} onOpenChange={setEditOpen}>
-						<DialogContent className="max-w-2xl">
-							<DialogHeader>
-								<DialogTitle>Editar Acta</DialogTitle>
-							</DialogHeader>
-							{editFormData && (
-								<div className="space-y-4 py-4">
-									<div className="grid grid-cols-2 gap-4">
-										<div className="space-y-2">
-											<Label htmlFor="edit-numero">Número</Label>
-											<Input id="edit-numero" value={editFormData.numero || ''} onChange={(e) => setEditFormData({ ...editFormData, numero: e.target.value })} />
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="edit-junta">Junta</Label>
-											<Input id="edit-junta" value={editFormData.junta || ''} onChange={(e) => setEditFormData({ ...editFormData, junta: e.target.value })} />
-										</div>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="edit-asunto">Asunto</Label>
-										<Input id="edit-asunto" value={editFormData.asunto || ''} onChange={(e) => setEditFormData({ ...editFormData, asunto: e.target.value })} />
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="edit-contenido">Contenido</Label>
-										<Textarea id="edit-contenido" className="min-h-32" value={editFormData.contenido || ''} onChange={(e) => setEditFormData({ ...editFormData, contenido: e.target.value })} />
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="edit-estado">Estado</Label>
-										<Select value={String(editFormData.estado || '')} onValueChange={(value) => setEditFormData({ ...editFormData, estado: value })}>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="Publicada">Publicada</SelectItem>
-												<SelectItem value="Borrador">Borrador</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-									<Button className="w-full bg-[var(--sidebar)]" onClick={handleSaveEdit}>
-										Guardar Cambios
-									</Button>
-								</div>
-							)}
-						</DialogContent>
-					</Dialog>
-			</div>
-		)
-	}
+      <Dialog open={!!editActa} onOpenChange={(o) => !o && setEditActa(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Acta</DialogTitle>
+          </DialogHeader>
+          {editActa && <EditForm acta={editActa} juntas={juntasList} onCancel={() => setEditActa(null)} onSave={handleSaveEdit} />}
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+

@@ -8,7 +8,6 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
-  NotFoundException,
   Res,
   HttpStatus,
 } from '@nestjs/common';
@@ -31,6 +30,11 @@ export class ActaController {
     return await this.actaService.CrearActa(actaDto);
   }
 
+  @Get()
+  async ObtenerActas() {
+    return await this.actaService.ObtenerActas();
+  }
+
   @Get(':id')
   async ObtenerActa(@Param('id') id: string) {
     return await this.actaService.ObtenerActa(id);
@@ -47,7 +51,12 @@ export class ActaController {
   }
   
   @Patch(':id/actualizar')
-  async actualizarActa(@Param('id') id: string, @Body() dto: ActaDto) {
+  @UseInterceptors(FileInterceptor('contenido'))
+  async actualizarActa(@Param('id') id: string, @Body() dto: any, @UploadedFile() contenido?: Express.Multer.File) {
+    // Si llega un archivo, asignarlo al DTO antes de actualizar
+    if (contenido && contenido.buffer) {
+      dto.contenido = contenido.buffer
+    }
     return await this.actaService.actualizarActa(id, dto);
   }
 
