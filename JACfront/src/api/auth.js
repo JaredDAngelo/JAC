@@ -33,13 +33,11 @@ export function parseToken() {
   if (!token) return null;
   try {
     const payload = token.split('.')[1];
-    // decode base64 payload
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
     const json = atob(base64);
     try {
       return JSON.parse(json);
     } catch (e) {
-      // some tokens are URI encoded
       return JSON.parse(decodeURIComponent(escape(json)));
     }
   } catch (e) {
@@ -54,8 +52,7 @@ export function getUserFromToken() {
 export function isTokenExpired() {
   const payload = parseToken();
   if (!payload) return true;
-  // exp is in seconds since epoch
-  if (!payload.exp) return false; // if no exp, assume non-expiring
+  if (!payload.exp) return false; 
   const now = Math.floor(Date.now() / 1000);
   return payload.exp < now;
 }

@@ -141,6 +141,68 @@ html, body {
 .text-sidebar-accent-foreground { color: var(--sidebar-accent-foreground); }
 .ring-sidebar-ring { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sidebar-ring) 20%, transparent); }
 
+/* Popover/select/command token helpers (ensure tokens exist even without Tailwind theme) */
+.bg-popover { background-color: var(--popover); }
+.text-popover-foreground { color: var(--popover-foreground); }
+.bg-input { background-color: var(--input); }
+.text-muted-foreground { color: var(--muted-foreground); }
+
+/* Defensive CSS rules for dropdown / command items and panel backgrounds.
+	 These ensure the hover/selected visuals work even if Tailwind utilities
+	 are not generated or dynamic classnames are missed. */
+
+[data-slot="select-content"],
+[data-slot="popover-content"],
+[data-slot="command"] {
+	background-color: var(--popover);
+	color: var(--popover-foreground);
+}
+
+[data-slot="select-item"],
+[data-slot="command-item"] {
+	transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* Hover — use accent with alpha so it's visible in both light/dark */
+[data-slot="select-item"]:hover,
+[data-slot="command-item"]:hover {
+	background-color: rgba(15,167,118,0.25); /* accent ~ #0fa776 at 25% */
+	color: var(--accent-foreground);
+}
+
+@media (prefers-color-scheme: dark) {
+	[data-slot="select-item"]:hover,
+	[data-slot="command-item"]:hover {
+		background-color: rgba(15,167,118,0.30);
+	}
+}
+
+/* Selected state (Radix may set data-selected="true") */
+[data-slot="select-item"][data-selected="true"],
+[data-slot="command-item"][data-selected="true"] {
+	background-color: var(--accent);
+	color: var(--accent-foreground);
+}
+
+/* Dropdown menu (card options) visual fallbacks */
+[data-slot="dropdown-menu-content"] {
+	background-color: var(--popover);
+	color: var(--popover-foreground);
+}
+
+[data-slot="dropdown-menu-item"] {
+	transition: background-color 150ms ease, color 150ms ease;
+}
+
+[data-slot="dropdown-menu-item"]:hover {
+	background-color: rgba(15,167,118,0.25);
+	color: var(--accent-foreground);
+}
+
+[data-slot="dropdown-menu-item"][data-variant="destructive"]:hover {
+	background-color: rgba(255,107,107,0.12);
+}
+
 /* Small utility backgrounds used by sidebar items */
 .bg-sidebar-overlay { background-color: rgba(255,255,255,0.04); }
 .bg-sidebar-active-icon { background-color: var(--muted); }

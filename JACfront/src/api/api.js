@@ -7,7 +7,7 @@ const API = axios.create({
   baseURL, // Cambia esto si tu backend está en otro puerto/dominio
 });
 
-// ✅ Interceptor para agregar el token a todas las peticiones
+// Interceptor para agregar el token a todas las peticiones
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -19,7 +19,7 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Interceptor para manejar errores 401
+// Interceptor para manejar errores 401
 API.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsMongoId } from "class-validator";
 
 export enum TipoLibro {
     LIBRO_ACTAS       = 'libro_actas',
@@ -12,6 +12,14 @@ export class LibrosDto {
     @IsNotEmpty()
     tipo : TipoLibro;
  
-    @IsNotEmpty()
+    @IsOptional()
     contenidoLibro : Buffer
+    
+    @IsOptional()
+    @IsString()
+    nombre?: string;
+
+    @IsOptional()
+    @IsMongoId()
+    junta?: string;
 }

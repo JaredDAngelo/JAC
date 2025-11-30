@@ -18,8 +18,49 @@ export class LibroService {
     return await nuevoLibro.save();
   }
 
+  async findAll(): Promise<Libro[]> {
+    return this.libroModel.find().populate('junta', 'nombreJunta').exec();
+  }
+
+  async findGrouped(): Promise<any> {
+    const libros = await this.findAll();
+    const grouped = {
+      inventarios: [] as any[],
+      actas: [] as any[],
+      afiliados: [] as any[],
+      tesoreria: [] as any[],
+    };
+    libros.forEach((l: any) => {
+      const item = {
+        id: l._id?.toString?.() ?? '',
+        nombre: l.nombre ?? (l.tipo || ''),
+        junta: l.junta ? (typeof l.junta === 'string' ? l.junta : l.junta.nombreJunta || '') : '',
+        actualizado: l.updatedAt ? l.updatedAt.toISOString().split('T')[0] : '',
+      };
+      switch (l.tipo) {
+        case 'libro_inventarios':
+          grouped.inventarios.push(item);
+          break;
+        case 'libro_actas':
+          grouped.actas.push(item);
+          break;
+        case 'libro_afiliados':
+          grouped.afiliados.push(item);
+          break;
+        case 'Libro_Tesoreria':
+          grouped.tesoreria.push(item);
+          break;
+        default:
+          break;
+      }
+    });
+    return grouped;
+  }
+
   async obtenerLibro(id: string): Promise<Libro> {
-    const libro = await this.libroModel.findById(id).exec();
+    // Obtener el libro y popular la referencia de `junta` para facilitar
+    // que el frontend muestre el nombre y el id correctamente al editar.
+    const libro = await this.libroModel.findById(id).populate('junta', 'nombreJunta nombre').exec();
     if (!libro) {
       throw new NotFoundException('Libro no Encontrado');
     }

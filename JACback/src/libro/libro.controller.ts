@@ -10,6 +10,7 @@ import {
   UploadedFile,
   Res,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { LibroService } from './libro.service';
 import { LibrosDto } from './dto/create-libro.dto';
@@ -26,8 +27,22 @@ export class LibroController {
     @Body() librosDto: LibrosDto,
     @UploadedFile() contenidoLibro: Express.Multer.File
   ) {
+    if (!contenidoLibro || !contenidoLibro.buffer) {
+      // devolver un error claro cuando no se sube archivo
+      throw new BadRequestException('El campo contenidoLibro (archivo) es requerido')
+    }
     librosDto.contenidoLibro = contenidoLibro.buffer;
     return await this.libroService.crearLibro(librosDto);
+  }
+
+  @Get()
+  async obtenerLibros() {
+    return await this.libroService.findAll();
+  }
+
+  @Get('grouped')
+  async obtenerLibrosGrouped() {
+    return await this.libroService.findGrouped();
   }
 
   @Get(':id')
@@ -41,6 +56,16 @@ export class LibroController {
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename=${libro.tipo}.pdf`,
+    });
+    res.status(HttpStatus.OK).send(libro.contenidoLibro);
+  }
+
+  @Get(':id/contenido')
+  async verContenido(@Param('id') id: string, @Res() res: Response) {
+    const libro = await this.libroService.descargarLibro(id);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename=${libro.tipo}.pdf`,
     });
     res.status(HttpStatus.OK).send(libro.contenidoLibro);
   }

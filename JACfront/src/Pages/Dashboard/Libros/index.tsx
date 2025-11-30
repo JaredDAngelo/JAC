@@ -1,22 +1,30 @@
 "use client"
 
+/*
+	Página principal de "Libros de Registro".
+
+	Descripción:
+	- Componente de página que muestra los libros agrupados por tipo (inventarios, actas, afiliados, tesorería).
+	- Gestiona la carga inicial, búsquedas, vistas en modal, descarga y apertura del formulario de edición.
+
+	Consideraciones para producción:
+	- Evitar exposiciones de tokens en URLs: las descargas y vistas usan fetch con cabeceras del cliente (API axios),
+		por eso se descargan como blobs y se crean object URLs temporales.
+	- Manejo de errores: se muestran toasts genéricos en UI; para producción es recomendable mostrar mensajes más
+		descriptivos y loggear detalles en el backend.
+	- Rendimiento: la lista se carga completa en memoria; si hay muchos libros, agregar paginación o carga por demanda.
+*/
+
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-	DropdownMenu,
-	DropdownMenuTrigger,
-	DropdownMenuContent,
-	DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Eye, Edit3, Download, Trash2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { getLibrosGrouped } from "./services/librosGroupedService"
+import { getLibrosGrouped, updateLibro, deleteLibro, fetchLibroBlob, downloadLibro, getLibroById } from "./services/librosGroupedService"
 import type { LibrosGrouped, LibroItem } from "./services/librosGroupedService"
+import { toast } from 'sonner'
+import { getJuntas } from '@/Pages/Dashboard/Juntas/services/juntasService'
+import NuevoLibroModal from './components/NuevoLibroModal'
 
 const BookIcon = () => (
 	<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,149 +43,65 @@ const PlusIcon = () => (
 	</svg>
 )
 
-// usando iconos de lucide-react para consistencia
-function LibroCard({
-	libro,
-	onView,
-	onEdit,
-	onDownload,
-	onDelete,
-}: {
-	libro: LibroItem
-	onView?: (l: LibroItem) => void
-	onEdit?: (l: LibroItem) => void
-	onDownload?: (l: LibroItem) => void
-	onDelete?: (id: number) => void
-}) {
-	return (
-		<Card className="hover:shadow-lg transition-all hover:border-[var(--sidebar)]/50">
-			<CardHeader className="pb-4">
-				<div className="flex items-start justify-between">
-					<div className="flex-1">
-						<CardTitle className="text-base">{libro.nombre}</CardTitle>
-						<CardDescription className="text-xs">{libro.junta}</CardDescription>
-					</div>
-					<div className="flex items-center gap-2">
-						<Badge variant="outline" className="ml-2">
-							{libro.registros}
-						</Badge>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="sm">
-												<MoreHorizontal className="w-4 h-4" />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											<DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onView?.(libro)}>
-												<Eye className="w-4 h-4" /> <span>Ver</span>
-											</DropdownMenuItem>
-											<DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onEdit?.(libro)}>
-												<Edit3 className="w-4 h-4" /> <span>Editar</span>
-											</DropdownMenuItem>
-											<DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onDownload?.(libro)}>
-												<Download className="w-4 h-4" /> <span>Descargar</span>
-											</DropdownMenuItem>
-											<DropdownMenuItem className="gap-2 cursor-pointer text-destructive" onClick={() => onDelete?.(libro.id)}>
-												<Trash2 className="w-4 h-4" /> <span>Eliminar</span>
-											</DropdownMenuItem>
-										</DropdownMenuContent>
-									</DropdownMenu>
-					</div>
-				</div>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				<div className="flex justify-between text-xs text-muted-foreground">
-					<span>Última actualización</span>
-					<span>{libro.actualizado}</span>
-				</div>
-				<Button variant="outline" className="w-full bg-card" onClick={() => onView?.(libro)}>
-					Abrir libro
-				</Button>
-			</CardContent>
-		</Card>
-	)
-}
-
-function EditForm({
-	libro,
-	onCancel,
-	onSave,
-}: {
-	libro: LibroItem
-	onCancel: () => void
-	onSave: (l: LibroItem) => void
-}) {
-	const [nombre, setNombre] = useState(libro.nombre)
-	const [junta, setJunta] = useState(libro.junta)
-	const [registros, setRegistros] = useState<number | string>(libro.registros)
-
-	function save() {
-		const updated: LibroItem = { ...libro, nombre: nombre.trim(), junta: junta.trim(), registros: Number(registros) }
-		onSave(updated)
-	}
-
-	return (
-		<div className="space-y-3">
-			<div>
-				<Label htmlFor="edit-nombre">Nombre</Label>
-				<Input id="edit-nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-			</div>
-			<div>
-				<Label htmlFor="edit-junta">Junta</Label>
-				<Input id="edit-junta" value={junta} onChange={(e) => setJunta(e.target.value)} />
-			</div>
-			<div>
-				<Label htmlFor="edit-registros">Registros</Label>
-				<Input id="edit-registros" value={String(registros)} onChange={(e) => setRegistros(e.target.value === "" ? "" : Number(e.target.value))} type="number" />
-			</div>
-			<div className="flex gap-2 justify-end">
-				<Button variant="ghost" onClick={onCancel}>Cancelar</Button>
-				<Button className="bg-[var(--sidebar)]" onClick={save}>Guardar</Button>
-			</div>
-		</div>
-	)
-}
+import LibroCard from './components/LibroCard'
+import EditForm from './components/EditForm'
 
 export default function LibrosPage() {
-	const [isOpen, setIsOpen] = useState(false)
+	// NuevoLibroModal maneja su propio estado de apertura
+	const [juntasList, setJuntasList] = useState<any[]>([])
 	const [grouped, setGrouped] = useState<LibrosGrouped | null>(null)
 	const [search, setSearch] = useState("")
 	const [viewLibro, setViewLibro] = useState<LibroItem | null>(null)
 	const [editLibro, setEditLibro] = useState<LibroItem | null>(null)
+	const [viewBlobUrl, setViewBlobUrl] = useState<string | null>(null)
+	const [viewLoading, setViewLoading] = useState(false)
 
-	function handleDownload(libro: LibroItem) {
-		const content = `Libro: ${libro.nombre}\nJunta: ${libro.junta}\nRegistros: ${libro.registros}\nÚltima: ${libro.actualizado}`
-		const blob = new Blob([content], { type: "text/plain;charset=utf-8" })
-		const url = URL.createObjectURL(blob)
-		const a = document.createElement("a")
-		a.href = url
-		a.download = `${libro.nombre.replace(/\s+/g, "_")}.txt`
-		document.body.appendChild(a)
-		a.click()
-		a.remove()
-		URL.revokeObjectURL(url)
-	}
-
-	function handleDelete(id: number) {
+	// Nota: las descargas de PDF se realizan con `downloadLibro` (usa el endpoint backend y auth).
+	async function handleDelete(id: string) {
 		if (!confirm("¿Eliminar este libro? Esta acción no se puede deshacer.")) return
 		if (!grouped) return
+		try {
+			await deleteLibro(id)
+			toast.success('Libro eliminado exitosamente')
+		} catch (e: any) {
+			console.error('deleteLibro failed', e)
+			const msg = e?.response?.data?.message || e?.message || 'Error al eliminar el libro'
+			toast.error(String(msg))
+			return
+		}
 		const next: LibrosGrouped = Object.fromEntries(
 			Object.entries(grouped).map(([k, items]) => [k, items.filter((it) => it.id !== id)])
 		) as LibrosGrouped
 		setGrouped(next)
 	}
 
-	function handleSaveEdit(updated: LibroItem) {
+	async function handleSaveEdit(updated: LibroItem) {
 		if (!grouped) return
-		const next: LibrosGrouped = Object.fromEntries(
-			Object.entries(grouped).map(([k, items]) => [k, items.map((it) => (it.id === updated.id ? updated : it))])
-		) as LibrosGrouped
-		setGrouped(next)
+		try {
+			const res = await updateLibro(updated.id, { nombre: updated.nombre, junta: updated.junta, tipo: updated.tipo })
+			// mapear la respuesta (si el backend devuelve el libro) a nuestra forma LibroItem
+			const mapped = {
+				id: String(res._id ?? res.id ?? updated.id),
+				nombre: res.nombre ?? updated.nombre,
+				junta: (res.junta && (typeof res.junta === 'string' ? res.junta : res.junta.nombreJunta)) ?? updated.junta,
+				tipo: res.tipo ?? updated.tipo,
+				actualizado: res.updatedAt ? new Date(res.updatedAt).toISOString().split('T')[0] : updated.actualizado,
+			}
+			const next: LibrosGrouped = Object.fromEntries(
+				Object.entries(grouped).map(([k, items]) => [k, items.map((it) => (it.id === updated.id ? mapped : it))])
+			) as LibrosGrouped
+			setGrouped(next)
+			toast.success(`Libro ${mapped.nombre} actualizado correctamente`)
+		} catch (e) {
+			console.error('updateLibro failed', e)
+			toast.error('Error al actualizar el libro')
+		}
 		setEditLibro(null)
 	}
 
 	useEffect(() => {
 		getLibrosGrouped().then((data) => setGrouped(data))
+		getJuntas().then((js) => setJuntasList(js)).catch(() => setJuntasList([]))
 	}, [])
 
 	if (!grouped) return <div className="p-4">Cargando...</div>
@@ -212,30 +136,12 @@ export default function LibrosPage() {
 				{(Object.entries(grouped) as [string, LibrosGrouped[keyof LibrosGrouped]][]).map(([key, items]) => (
 					<TabsContent key={key} value={key} className="space-y-4">
 						<div className="flex justify-end">
-							<Dialog open={isOpen} onOpenChange={setIsOpen}>
-								<DialogTrigger asChild>
-									<Button className="gap-2 bg-[var(--sidebar)]">
-										<PlusIcon /> Nuevo Libro
-									</Button>
-								</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>Crear Nuevo Libro</DialogTitle>
-										<DialogDescription>Registra un nuevo libro de {key}</DialogDescription>
-									</DialogHeader>
-									<div className="space-y-4 py-4">
-										<div className="space-y-2">
-											<Label htmlFor="nombre">Nombre del Libro</Label>
-											<Input id="nombre" placeholder="Ej: Inventario Equipos 2024" />
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="junta">Junta</Label>
-											<Input id="junta" placeholder="Seleccionar junta" />
-										</div>
-										<Button className="w-full bg-[var(--sidebar)]">Crear Libro</Button>
-									</div>
-								</DialogContent>
-							</Dialog>
+							{/* NuevoLibroModal incluye su propio trigger */}
+							<NuevoLibroModal juntas={juntasList} onCreated={async (created) => {
+								toast.success(`Libro ${created.nombre ?? 'creado'} creado correctamente`)
+								const refreshed = await getLibrosGrouped()
+								setGrouped(refreshed)
+							}} />
 						</div>
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -243,15 +149,61 @@ export default function LibrosPage() {
 								.filter((it) => {
 									if (!search) return true
 									const q = search.toLowerCase()
-									return it.nombre.toLowerCase().includes(q) || it.junta.toLowerCase().includes(q)
+									return (it.nombre || '').toLowerCase().includes(q) || (it.junta || '').toLowerCase().includes(q)
 								})
 								.map((libro) => (
 									<LibroCard
 										key={libro.id}
 										libro={libro}
-										onView={(l) => setViewLibro(l)}
-										onEdit={(l) => setEditLibro(l)}
-										onDownload={(l) => handleDownload(l)}
+										onView={(l) => {
+											// abrir modal y cargar blob PDF
+											setViewLibro(l)
+											setViewLoading(true)
+											fetchLibroBlob(l.id)
+												.then((b) => {
+													const url = window.URL.createObjectURL(new Blob([b], { type: 'application/pdf' }))
+													setViewBlobUrl(url)
+												})
+												.catch((err) => {
+													console.error('fetchLibroBlob failed', err)
+													toast.error('No se pudo cargar el archivo del libro')
+													setViewLibro(null)
+												})
+												.finally(() => setViewLoading(false))
+										}}
+										onEdit={async (l) => {
+											try {
+												const full = await getLibroById(l.id)
+												// normalizar a la forma LibroItem
+												const juntaFromRes = full.junta
+												let juntaId = ''
+												let juntaLabelLocal = ''
+												if (juntaFromRes) {
+													if (typeof juntaFromRes === 'string') {
+														// el backend pudo devolver el nombre en lugar del id; usarlo como etiqueta
+														juntaLabelLocal = juntaFromRes
+														juntaId = juntaFromRes
+													} else {
+														// objeto poblado
+														juntaId = String(juntaFromRes._id ?? juntaFromRes.id ?? '')
+														juntaLabelLocal = juntaFromRes.nombreJunta ?? juntaFromRes.nombre ?? ''
+													}
+												}
+												const mapped: LibroItem = {
+													id: String(full._id ?? full.id ?? l.id),
+													nombre: full.nombre ?? l.nombre,
+													junta: juntaId,
+													tipo: full.tipo ?? l.tipo ?? '',
+													actualizado: full.updatedAt ? new Date(full.updatedAt).toISOString().split('T')[0] : l.actualizado,
+												}
+												setEditLibro(mapped)
+											} catch (err) {
+												console.error('getLibroById failed', err)
+												// fallback: abrir el editor con el item agrupado
+												setEditLibro(l)
+											}
+										}}
+										onDownload={(l) => downloadLibro(l.id, `${l.nombre.replace(/\s+/g,'_')}.pdf`)}
 										onDelete={(id) => handleDelete(id)}
 									/>
 								))}
@@ -261,24 +213,50 @@ export default function LibrosPage() {
 			</Tabs>
 
 			{/* View Dialog */}
-			<Dialog open={!!viewLibro} onOpenChange={(o) => !o && setViewLibro(null)}>
+			<Dialog open={!!viewLibro} onOpenChange={(o) => {
+				if (!o) {
+					setViewLibro(null)
+					if (viewBlobUrl) {
+						window.URL.revokeObjectURL(viewBlobUrl)
+						setViewBlobUrl(null)
+					}
+				}
+			}}>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Detalle del Libro</DialogTitle>
 					</DialogHeader>
 					{viewLibro && (
 						<div className="space-y-2 py-2">
-							<div>
-								<strong>Nombre:</strong> {viewLibro.nombre}
+							<div className="flex items-center justify-between">
+								<div>
+									<strong>Nombre:</strong> {viewLibro.nombre}
+								</div>
+								<div className="flex gap-2">
+									<Button size="sm" onClick={() => downloadLibro(viewLibro.id, `${viewLibro.nombre.replace(/\s+/g,'_')}.pdf`)}>Descargar</Button>
+									<Button size="sm" variant="ghost" onClick={() => {
+										// abrir en nueva pestaña usando el blob ya cargado
+										if (viewBlobUrl) window.open(viewBlobUrl, '_blank')
+									}}>Abrir en nueva pestaña</Button>
+								</div>
 							</div>
 							<div>
 								<strong>Junta:</strong> {viewLibro.junta}
 							</div>
 							<div>
-								<strong>Registros:</strong> {viewLibro.registros}
+								<strong>Registros:</strong> {viewLibro.registros ?? '—'}
 							</div>
 							<div>
 								<strong>Última actualización:</strong> {viewLibro.actualizado}
+							</div>
+							<div className="mt-2">
+								{viewLoading && <div>Cargando archivo...</div>}
+								{!viewLoading && viewBlobUrl && (
+									<iframe title="visor-pdf" src={viewBlobUrl} className="w-full h-[70vh]" />
+								)}
+								{!viewLoading && !viewBlobUrl && (
+									<div className="text-sm text-muted-foreground">No hay archivo disponible para este libro.</div>
+								)}
 							</div>
 						</div>
 					)}
@@ -292,7 +270,7 @@ export default function LibrosPage() {
 						<DialogTitle>Editar Libro</DialogTitle>
 					</DialogHeader>
 					{editLibro && (
-						<EditForm libro={editLibro} onCancel={() => setEditLibro(null)} onSave={handleSaveEdit} />
+						<EditForm libro={editLibro} onCancel={() => setEditLibro(null)} onSave={handleSaveEdit} juntas={juntasList} />
 					)}
 				</DialogContent>
 			</Dialog>
