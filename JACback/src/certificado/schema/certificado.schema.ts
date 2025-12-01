@@ -15,20 +15,20 @@ export class Certificado {
   @Prop({ required: true })
   fechaEmision: Date;
 
-  @Prop({ required: true })
-  numeroRadicado: string;
+  // @Prop({ required: true })
+  // numeroRadicado: string;
 
   @Prop({ required: true })
   ciudadEmision: string;
 
-  @Prop({ required: true })
-  nombreSecretario: string;
+  // @Prop({ required: true })
+  // nombreSecretario: string;
 
-  @Prop({ required: true })
-  cargoSecretario: string;
+  // @Prop({ required: true })
+  // cargoSecretario: string;
 
-  @Prop({ required: true })
-  nombreGobernador: string;
+  // @Prop({ required: true })
+  // nombreGobernador: string;
 
   @Prop({ type: Buffer })
   pdfBuffer?: Buffer;

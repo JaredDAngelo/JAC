@@ -46,7 +46,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="mx-auto mb-4">
-            <img src={logo} alt="JAC" className="w-12 h-12 mx-auto" />
+            <img src={logo} alt="JAC" className="w-15 h-16 mx-auto sm:w-25 sm:h-20" />
           </div>
           <h1 className="text-2xl font-bold">JAC</h1>
           <p className="text-slate-600">Gestión de Juntas de Acción Comunal</p>

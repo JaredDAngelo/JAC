@@ -1,11 +1,10 @@
 import { IsNotEmpty, IsDateString, IsString, IsEnum } from 'class-validator';
 
 export enum TipoCertificado {
-  GUIA_ESTATUTO = 'GUIA_ESTATUTO',
-  ACTA_CONSTITUCION = 'ACTA_CONSTITUCION',
-  ACTA_ELECCION = 'ACTA_ELECCION_DESTINATARIO',
-  ASAMBLEA_CONSTITUCION = 'ASAMBLEA_CONSTITUCION',
-  INTERES_ASOCIATIVO = 'INTERES_ASOCIATIVO',
+  ACTA_EXISTENCIA = 'ACTA_EXISTENCIA',
+  ACTA_DIRECTIVOS = 'ACTA_DIRECTIVOS',
+  ACTA_LIBROS = 'ACTA_LIBROS',
+  CERTIFICADO_ACTA = 'CERTIFICADO_ACTA',
 }
 
 export class CreateCertificadoDto {
@@ -21,23 +20,23 @@ export class CreateCertificadoDto {
   @IsDateString()
   fechaEmision: Date;
 
-  @IsNotEmpty()
-  @IsString()
-  numeroRadicado: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // numeroRadicado: string;
 
   @IsNotEmpty()
   @IsString()
   ciudadEmision: string;
 
-  @IsNotEmpty()
-  @IsString()
-  nombreSecretario: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // nombreSecretario: string;
 
-  @IsNotEmpty()
-  @IsString()
-  cargoSecretario: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // cargoSecretario: string;
 
-  @IsNotEmpty()
-  @IsString()
-  nombreGobernador: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // nombreGobernador: string;
 }

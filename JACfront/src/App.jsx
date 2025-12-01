@@ -15,7 +15,6 @@ import Notfound from "./Pages/Notfound";
 // Páginas privadas
 import Dashboard from "./Pages/Dashboard";
 import Libros from "./Pages/Dashboard/Libros/";
-import Certificados from "./Pages/Dashboard/Certificados";
 import Actas from "./Pages/Dashboard/Actas";
 import PerfilUsuario from "./Pages/Dashboard/Profile";
 import Junta from "./Pages/Dashboard/Juntas";
@@ -50,7 +49,6 @@ function App() {
             {/* Subvistas de libros (anidadas bajo /dashboard) */}
             <Route path="/dashboard/libros" element={<Libros />} />
 
-            <Route path="/dashboard/certificados" element={<Certificados />} />
             <Route path="/dashboard/actas" element={<Actas />} />
             <Route path="/dashboard/usuarios" element={<Usuarios />} />
             <Route path="/dashboard/roles-permisos" element={<RolesPermisos />} />

@@ -26,14 +26,13 @@ import { toast } from 'sonner'
 const menuItems = [
   { label: 'Inicio', href: '/dashboard', icon: HomeIcon },
   { label: 'Juntas', href: '/dashboard/juntas', icon: UsersIcon },
-  { label: 'Usuarios', href: '/dashboard/usuarios', icon: UsersIcon },
-  { label: 'Roles y Permisos', href: '/dashboard/roles-permisos', icon: Key },
   { label: 'Libros', href: '/dashboard/libros', icon: BookOpenIcon },
   { label: 'Actas', href: '/dashboard/actas', icon: FileTextIcon },
-  { label: 'Certificados', href: '/dashboard/certificados', icon: AwardIcon },
 ]
 
 const bottomItems = [
+  { label: 'Usuarios', href: '/dashboard/usuarios', icon: UsersIcon },
+  { label: 'Roles y Permisos', href: '/dashboard/roles-permisos', icon: Key },
   { label: 'Perfil de Usuario', href: '/dashboard/perfil', icon: UserIcon },
   { label: 'Configuración', href: '/dashboard/configuracion', icon: SettingsIcon },
   { label: 'Cerrar Sesión', href: '/api/auth/logout', icon: LogOutIcon },
